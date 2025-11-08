@@ -20,7 +20,7 @@ export const gameInfo: {
     hp: 20,
     wave: 1,
     enemiesHp: 5,
-    radiusX: 300,
+    radiusX: 350,
     radiusY: 200,
     enemiesLeft: 0,
     enemiesKilled: 0,

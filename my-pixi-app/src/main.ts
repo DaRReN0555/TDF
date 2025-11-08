@@ -41,77 +41,86 @@ let towerCooldown = 0;
 const TOWER_FIRE_RATE = 500;
 const ARROW_SPEED = 5;
 
-app.ticker.add((delta: Ticker) => {
-    towerAttack(delta.deltaMS);
-});
+interface EnemyWithHp extends Sprite {
+    hp: number;
+    isTargeted?: boolean;
+}
+
+app.ticker.add((delta: Ticker) => towerAttack(delta.deltaMS));
 
 export function towerAttack(deltaMS: number) {
     towerCooldown -= deltaMS;
     if (towerCooldown > 0) return;
 
-    const target = gameInfo.enemies.find(enemy =>
+    const target = gameInfo.enemies.find((enemy) =>
         isInsideTowerEllipse(
-            enemy.x,
-            enemy.y,
+            enemy.x, enemy.y,
             tower.x + tower.width / 2,
             tower.y + tower.height / 2,
             gameInfo.radiusX,
             gameInfo.radiusY
-        )
-    );
+        ) && !(enemy as EnemyWithHp).isTargeted
+    ) as EnemyWithHp | undefined;
 
-    if (target) {
-        shootArrow(target);
-        towerCooldown = TOWER_FIRE_RATE;
-    }
+    if (!target) return;
+
+    if (target.hp === undefined) target.hp = gameInfo.enemiesHp;
+    target.isTargeted = true;
+
+    shootArrow(target, gameInfo.damage);
+    towerCooldown = TOWER_FIRE_RATE;
 }
 
-function shootArrow(enemy: Sprite) {
+function shootArrow(enemy: EnemyWithHp, damage: number) {
     if (!enemy.parent) return;
 
-    const arrowSprite = new Sprite(arrowTexture);
-    arrowSprite.anchor.set(0.5, 0.5);
-    arrowSprite.width = 21;
-    arrowSprite.height = 35;
-    arrowSprite.x = tower.x + tower.width / 2;
-    arrowSprite.y = tower.y + tower.height / 2 - 50;
-    app.stage.addChild(arrowSprite);
+    const arrow = new Sprite(arrowTexture);
+    arrow.anchor.set(0.5, 0);
+    arrow.width = 21;
+    arrow.height = 35;
+    arrow.x = tower.x + tower.width / 2;
+    arrow.y = tower.y + tower.height / 2 - 50;
+    app.stage.addChild(arrow);
 
     const moveArrow = (delta: Ticker) => {
-        if (!enemy.parent) {
-            app.stage.removeChild(arrowSprite);
-            app.ticker.remove(moveArrow);
-            return;
-        }
+        if (!enemy.parent) return removeArrow();
 
-        const dx = enemy.x - arrowSprite.x;
-        const dy = enemy.y - arrowSprite.y;
+        const dx = enemy.x - arrow.x;
+        const dy = (enemy.y - 20) - arrow.y;
         const dist = Math.sqrt(dx*dx + dy*dy);
 
         if (dist < 5) {
-            app.stage.removeChild(arrowSprite);
-            app.stage.removeChild(enemy);
-            const index = gameInfo.enemies.indexOf(enemy);
-            if (index !== -1) gameInfo.enemies.splice(index, 1);
-            app.ticker.remove(moveArrow);
+            enemy.hp -= damage;
+            if (enemy.hp <= 0) removeEnemy(enemy);
+            enemy.isTargeted = false;
+            removeArrow();
             return;
         }
 
-        arrowSprite.x += (dx / dist) * ARROW_SPEED * delta.deltaTime;
-        arrowSprite.y += (dy / dist) * ARROW_SPEED * delta.deltaTime;
-        arrowSprite.rotation = Math.atan2(dy, dx) + Math.PI / 2;
+        arrow.x += (dx / dist) * ARROW_SPEED * delta.deltaTime;
+        arrow.y += (dy / dist) * ARROW_SPEED * delta.deltaTime;
+        arrow.rotation = Math.atan2(dy, dx) + Math.PI / 2;
 
-        if (
-            arrowSprite.x < 0 || arrowSprite.x > app.screen.width ||
-            arrowSprite.y < 0 || arrowSprite.y > app.screen.height
-        ) {
-            app.stage.removeChild(arrowSprite);
-            app.ticker.remove(moveArrow);
+        if (arrow.x < 0 || arrow.x > app.screen.width || arrow.y < 0 || arrow.y > app.screen.height) {
+            enemy.isTargeted = false;
+            removeArrow();
         }
+    };
+
+    const removeArrow = () => {
+        if (arrow.parent) arrow.parent.removeChild(arrow);
+        app.ticker.remove(moveArrow);
+    };
+
+    const removeEnemy = (enemy: EnemyWithHp) => {
+        if (enemy.parent) enemy.parent.removeChild(enemy);
+        const index = gameInfo.enemies.indexOf(enemy);
+        if (index !== -1) gameInfo.enemies.splice(index, 1);
     };
 
     app.ticker.add(moveArrow);
 }
+
 
 function isInsideTowerEllipse(
     enemyX: number, 
