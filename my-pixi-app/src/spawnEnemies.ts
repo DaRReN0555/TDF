@@ -11,8 +11,8 @@ const crushingReverseFrames: Texture[] = await Promise.all(
 const spawnFrames: Texture[] = await Promise.all(
   [1,2,3,4,5,6,7,8,9,10,11].map(i => Assets.load(`Sprites/Animations/UFO(1)${i}.png`))
 );
-console.log(crushingFrames)
 export async function spawnEnemies () {
+
     let spritePng = "Sprites/UFO/UFO(1).png";
     if (gameInfo.wave <= 5) {
         spritePng = "Sprites/UFO/UFO(1).png";
@@ -51,7 +51,7 @@ for(let k = 0; k < gameInfo.enemiesOnWave; k++) {
 
     const animPromise = (async () => {
     const crushAnim = await crushingAnimation(entity.x, entity.y);
-    const sizeAnim = await sizeAnimation(entity);
+    await sizeAnimation(entity);
     if (crushAnim) app.stage.removeChild(crushAnim);
     await crushingReverseAnimation(entity);
     })();

@@ -9,7 +9,9 @@ export async function createTower() {
   towerContainer.texture = towerTexture;
     towerContainer.width = 130;
     towerContainer.height = 166;
+    towerContainer.anchor.set(0, 0);
     towerContainer.x = gameInfo.blocks[17][0] - 60
     towerContainer.y = gameInfo.blocks[17][1] + 30
     app.stage.addChild(towerContainer);
+    return towerContainer
 }

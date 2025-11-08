@@ -26,7 +26,6 @@ export async function createMap() {
 
     block.x = pos.x;
     block.y = pos.y;
-    console.log(k, block.x, block.y)
     
     gameInfo.blocks.push([block.x, block.y]);
    
