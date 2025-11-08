@@ -26,7 +26,7 @@ export async function spawnEnemies() {
     else if (gameInfo.wave > 25) spritePng = "Sprites/UFO/UFO(6).png";
     else if (gameInfo.wave > 30) spritePng = "Sprites/UFO/UFO(7).png";
 
-    const sizeAnimPromises: Promise<void>[] = [];
+    const SPAWN_INTERVAL = 600;
 
     for (let k = 0; k < gameInfo.enemiesOnWave; k++) {
         const sprite = await Assets.load(spritePng);
@@ -37,34 +37,30 @@ export async function spawnEnemies() {
         entity.anchor.set(0.5, 1);
         app.stage.addChild(entity);
 
-        const animPromise = (async () => {
-            const crushAnim = await crushingAnimation(entity.x, entity.y);
-            await sizeAnimation(entity);
-            if (crushAnim) app.stage.removeChild(crushAnim);
-            await crushingReverseAnimation(entity);
+        const crushAnim = await crushingAnimation(entity.x, entity.y);
+        await sizeAnimation(entity);
+        if (crushAnim) app.stage.removeChild(crushAnim);
+        await crushingReverseAnimation(entity);
 
-            const walkAnim = new AnimatedSprite(walkFrames);
-            walkAnim.x = entity.x;
-            walkAnim.y = entity.y;
-            walkAnim.anchor.set(0.5, 1);
-            walkAnim.width = enemySize.x;
-            walkAnim.height = enemySize.y;
-            walkAnim.animationSpeed = 0.5;
-            walkAnim.loop = true;
-            walkAnim.play();
+        const walkAnim = new AnimatedSprite(walkFrames);
+        walkAnim.x = entity.x;
+        walkAnim.y = entity.y;
+        walkAnim.anchor.set(0.5, 1);
+        walkAnim.width = enemySize.x;
+        walkAnim.height = enemySize.y;
+        walkAnim.animationSpeed = 0.5;
+        walkAnim.loop = true;
+        walkAnim.play();
 
-            const index = app.stage.getChildIndex(entity);
-            app.stage.removeChild(entity);
-            app.stage.addChildAt(walkAnim, index);
+        const index = app.stage.getChildIndex(entity);
+        app.stage.removeChild(entity);
+        app.stage.addChildAt(walkAnim, index);
 
-            gameInfo.enemies.push(walkAnim);
-            gameInfo.enemiesLeft += 1;
-        })();
+        gameInfo.enemies.push(walkAnim);
+        gameInfo.enemiesLeft += 1;
 
-        sizeAnimPromises.push(animPromise);
+        await new Promise(res => setTimeout(res, SPAWN_INTERVAL));
     }
-
-    await Promise.all(sizeAnimPromises);
 }
 
 function pickSpawnPos(entity: Sprite) {
@@ -88,12 +84,31 @@ function pickSpawnPos(entity: Sprite) {
 async function crushingAnimation(x: number, y: number): Promise<AnimatedSprite> {
     return new Promise(resolve => {
         const anim = new AnimatedSprite(crushingFrames);
-        anim.x = x; anim.y = y; anim.anchor.set(0.5);
-        anim.width = 50; anim.height = 30;
-        anim.animationSpeed = 0.1; anim.loop = false;
+        anim.x = x;
+        anim.y = y;
+        anim.anchor.set(0.5);
+        anim.width = 50;
+        anim.height = 30;
+        anim.loop = false;
         app.stage.addChild(anim);
-        anim.play();
-        anim.onComplete = () => resolve(anim);
+
+        const totalFrames = anim.totalFrames;
+        const duration = 500;
+        const startTime = performance.now();
+
+        const tickerCallback = () => {
+            const elapsed = performance.now() - startTime;
+            let t = Math.min(elapsed / duration, 1);
+            t = easeInOutCubic(t);
+            anim.gotoAndStop(Math.floor(t * (totalFrames - 1)));
+
+            if (t >= 1) {
+                app.ticker.remove(tickerCallback);
+                resolve(anim);
+            }
+        };
+
+        app.ticker.add(tickerCallback);
     });
 }
 
@@ -130,10 +145,12 @@ async function sizeAnimation(entity: Sprite): Promise<void> {
 async function crushingReverseAnimation(entity: Sprite): Promise<void> {
     return new Promise(resolve => {
         const anim = new AnimatedSprite(crushingReverseFrames);
-        anim.x = entity.x; anim.y = entity.y; anim.anchor.set(0.5);
-        anim.width = 50; anim.height = 30;
-        anim.animationSpeed = 0.1; anim.loop = false;
-
+        anim.x = entity.x;
+        anim.y = entity.y;
+        anim.anchor.set(0.5);
+        anim.width = 50;
+        anim.height = 30;
+        anim.loop = false;
         app.stage.addChildAt(anim, app.stage.getChildIndex(entity));
 
         const totalFrames = anim.totalFrames;

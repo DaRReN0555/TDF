@@ -1,4 +1,4 @@
-import { Application, Assets, Sprite, Container, Graphics, Ticker } from 'pixi.js';
+import { Application, Assets, Sprite, Graphics, Ticker } from 'pixi.js';
 import {createMap} from "./createMap.js";
 import {createTower} from "./createTower.js";
 import {spawnEnemies} from "./spawnEnemies.js";
