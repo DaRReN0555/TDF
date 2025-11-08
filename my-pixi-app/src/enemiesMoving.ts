@@ -31,5 +31,6 @@ function updateEnemies(deltaTime: Ticker): void {
         enemy.x += dx * ENEMY_SPEED * delta;
         enemy.y += dy * ENEMY_SPEED * delta;
 
+
     }
 }
