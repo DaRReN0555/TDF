@@ -2,20 +2,26 @@ import { Sprite, Assets, Texture, AnimatedSprite } from 'pixi.js';
 import { app } from './main.js';
 export const gameInfo: {
     blocks: Array<Array<number>>,
+    damage: number,
     money: number,
     hp: number,
     wave: number,
     enemiesHp: number,
+    radiusX: number,
+    radiusY: number,
     enemiesLeft: number,
     enemiesKilled: number,
     enemiesOnWave: number,
     enemies: Array<Sprite>
 } = {
     blocks: [],
+    damage: 5,
     money: 0,
     hp: 20,
     wave: 1,
-    enemiesHp: 10,
+    enemiesHp: 5,
+    radiusX: 300,
+    radiusY: 200,
     enemiesLeft: 0,
     enemiesKilled: 0,
     enemiesOnWave: 4,
