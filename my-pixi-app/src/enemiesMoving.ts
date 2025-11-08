@@ -16,7 +16,7 @@ function updateEnemies(deltaTime: Ticker): void {
 
         if (!enemy || !enemy.x || !enemy.y) continue;
 
-        let dx = tower.x + 65 - enemy.x;
+        let dx = tower.x - enemy.x;
         let dy = tower.y + 120 - enemy.y;
 
         const dist = Math.sqrt(dx * dx + dy * dy);

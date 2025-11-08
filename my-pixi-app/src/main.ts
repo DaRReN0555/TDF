@@ -1,6 +1,6 @@
 import { Application, Assets, Sprite, Graphics, Ticker } from 'pixi.js';
 import {createMap} from "./createMap.js";
-import {createTower} from "./createTower.js";
+import {createTower, bow} from "./createTower.js";
 import {spawnEnemies} from "./spawnEnemies.js";
 import {startEnemyMovement} from "./enemiesMoving.js";
 import {gameInfo} from "./constants.js";
@@ -46,7 +46,9 @@ interface EnemyWithHp extends Sprite {
     isTargeted?: boolean;
 }
 
-app.ticker.add((delta: Ticker) => towerAttack(delta.deltaMS));
+app.ticker.add((delta: Ticker) => {
+    towerAttack(delta.deltaMS)
+});
 
 export function towerAttack(deltaMS: number) {
     towerCooldown -= deltaMS;
@@ -55,8 +57,8 @@ export function towerAttack(deltaMS: number) {
     const target = gameInfo.enemies.find((enemy) =>
         isInsideTowerEllipse(
             enemy.x, enemy.y,
-            tower.x + tower.width / 2,
-            tower.y + tower.height / 2,
+            tower.x + tower.width / 2 - 65,
+            tower.y + tower.height / 2 + 35,
             gameInfo.radiusX,
             gameInfo.radiusY
         ) && !(enemy as EnemyWithHp).isTargeted
@@ -73,54 +75,100 @@ export function towerAttack(deltaMS: number) {
 
 function shootArrow(enemy: EnemyWithHp, damage: number) {
     if (!enemy.parent) return;
+    if (bow) {
+        const towerCenterX = tower.x + tower.width / 2;
+        const towerCenterY = tower.y + tower.height / 2;
+        const dx = enemy.x - towerCenterX;
+        const dy = enemy.y - towerCenterY;
+        const angle = Math.atan2(dy, dx);
 
-    const arrow = new Sprite(arrowTexture);
-    arrow.anchor.set(0.5, 0);
-    arrow.width = 21;
-    arrow.height = 35;
-    arrow.x = tower.x + tower.width / 2;
-    arrow.y = tower.y + tower.height / 2 - 50;
-    app.stage.addChild(arrow);
+        const orbitRadius = 25;
+        const orbitX = Math.cos(angle) * orbitRadius;
+        const orbitY = Math.sin(angle) * orbitRadius;
+
+        bow.x = tower.width / 2 + orbitX - 65;
+        bow.y = tower.height / 2 + orbitY - 40;
+        bow.rotation = angle + Math.PI
+
+        const recoilDist = 8;
+        const recoilX = Math.cos(angle) * recoilDist;
+        const recoilY = Math.sin(angle) * recoilDist;
+
+        const startX = bow.x;
+        const startY = bow.y;
+        const targetX = startX - recoilX;
+        const targetY = startY - recoilY;
+
+        const startTime = performance.now();
+        const duration = 150;
+
+        const animateRecoil = (time: number) => {
+            const t = Math.min((time - startTime) / duration, 1);
+            const ease = 1 - Math.pow(1 - t, 3);
+
+            bow.x = targetX + (startX - targetX) * (1 - ease);
+            bow.y = targetY + (startY - targetY) * (1 - ease);
+
+            if (t < 1) requestAnimationFrame(animateRecoil);
+            else {
+                bow.x = startX;
+                bow.y = startY;
+            }
+        };
+        requestAnimationFrame(animateRecoil);
+    }
+
+    const arrowSprite = new Sprite(arrowTexture);
+    arrowSprite.anchor.set(0.5, 0);
+    arrowSprite.width = 21;
+    arrowSprite.height = 35;
+    
+    arrowSprite.x = bow.x + tower.x;
+    arrowSprite.y = bow.y + tower.y
+    arrowSprite.zIndex = tower.zIndex + 1;
+    app.stage.addChild(arrowSprite);
 
     const moveArrow = (delta: Ticker) => {
-        if (!enemy.parent) return removeArrow();
-
-        const dx = enemy.x - arrow.x;
-        const dy = (enemy.y - 20) - arrow.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-
-        if (dist < 5) {
-            enemy.hp -= damage;
-            if (enemy.hp <= 0) removeEnemy(enemy);
-            enemy.isTargeted = false;
-            removeArrow();
+        if (!enemy.parent) {
+            app.stage.removeChild(arrowSprite);
+            app.ticker.remove(moveArrow);
             return;
         }
 
-        arrow.x += (dx / dist) * ARROW_SPEED * delta.deltaTime;
-        arrow.y += (dy / dist) * ARROW_SPEED * delta.deltaTime;
-        arrow.rotation = Math.atan2(dy, dx) + Math.PI / 2;
+        const dx = enemy.x - arrowSprite.x;
+        const dy = enemy.y - 20 - arrowSprite.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
 
-        if (arrow.x < 0 || arrow.x > app.screen.width || arrow.y < 0 || arrow.y > app.screen.height) {
+        if (dist < 5) {
+            enemy.hp -= damage;
+            if (enemy.hp <= 0) {
+                if (enemy.parent) enemy.parent.removeChild(enemy);
+                const index = gameInfo.enemies.indexOf(enemy);
+                if (index !== -1) gameInfo.enemies.splice(index, 1);
+            }
+
             enemy.isTargeted = false;
-            removeArrow();
+            app.stage.removeChild(arrowSprite);
+            app.ticker.remove(moveArrow);
+            return;
         }
-    };
 
-    const removeArrow = () => {
-        if (arrow.parent) arrow.parent.removeChild(arrow);
-        app.ticker.remove(moveArrow);
-    };
+        arrowSprite.x += (dx / dist) * ARROW_SPEED * delta.deltaTime;
+        arrowSprite.y += (dy / dist) * ARROW_SPEED * delta.deltaTime;
+        arrowSprite.rotation = Math.atan2(dy, dx) + Math.PI / 2;
 
-    const removeEnemy = (enemy: EnemyWithHp) => {
-        if (enemy.parent) enemy.parent.removeChild(enemy);
-        const index = gameInfo.enemies.indexOf(enemy);
-        if (index !== -1) gameInfo.enemies.splice(index, 1);
+        if (
+            arrowSprite.x < 0 || arrowSprite.x > app.screen.width ||
+            arrowSprite.y < 0 || arrowSprite.y > app.screen.height
+        ) {
+            app.stage.removeChild(arrowSprite);
+            enemy.isTargeted = false;
+            app.ticker.remove(moveArrow);
+        }
     };
 
     app.ticker.add(moveArrow);
 }
-
 
 function isInsideTowerEllipse(
     enemyX: number, 
@@ -135,10 +183,3 @@ function isInsideTowerEllipse(
     return (dx*dx) / (radiusX*radiusX) + (dy*dy) / (radiusY*radiusY) <= 1;
 }
 
-
-
-const ellipse = new Graphics();
-ellipse
-    .ellipse(tower.x + tower.width / 2, tower.y + tower.height / 2, gameInfo.radiusX, gameInfo.radiusY)
-    .stroke({ width: 4, color: "red" });
-app.stage.addChild(ellipse);
