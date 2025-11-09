@@ -142,9 +142,14 @@ function shootArrow(enemy: EnemyWithHp, damage: number) {
         if (dist < 5) {
             enemy.hp -= damage;
             if (enemy.hp <= 0) {
+                const deathX = enemy.x;
+                const deathY = enemy.y;
                 if (enemy.parent) enemy.parent.removeChild(enemy);
+
                 const index = gameInfo.enemies.indexOf(enemy);
                 if (index !== -1) gameInfo.enemies.splice(index, 1);
+
+                spawnDeathParticles(deathX, deathY);
             }
 
             enemy.isTargeted = false;
@@ -183,3 +188,47 @@ function isInsideTowerEllipse(
     return (dx*dx) / (radiusX*radiusX) + (dy*dy) / (radiusY*radiusY) <= 1;
 }
 
+interface Particle extends Graphics {
+  vx: number;
+  vy: number;
+}
+
+function spawnDeathParticles(x: number, y: number) {
+    const particles: Graphics[] = [];
+    const count = Math.floor(Math.random() * 5) + 3;
+
+    for (let i = 0; i < count; i++) {
+        const p = new Graphics() as Particle;;
+        const size = 3 + Math.random() * 3;
+        p.beginFill("e8ebea");
+        p.drawRect(-size / 2, -size / 2, size, size);
+        p.endFill();
+        p.x = x;
+        p.y = y;
+        p.vx = (Math.random() - 0.5);
+        p.vy = -Math.random() * 5;
+        app.stage.addChild(p);
+        particles.push(p);
+    }
+
+    const gravity = 0.2;
+
+    const animate = (delta: Ticker) => {
+        for (const p of particles as Particle[]) {
+            p.vy += gravity;
+            p.x += p.vx * delta.deltaTime;
+            p.y += p.vy * delta.deltaTime;
+            p.alpha -= 0.02 * delta.deltaTime;
+
+            if (p.y > y + 20) p.vy *= -0.3;
+            if (p.alpha <= 0) {
+                app.stage.removeChild(p);
+                particles.splice(particles.indexOf(p), 1);
+            }
+        }
+
+        if (!particles.length) app.ticker.remove(animate);
+    };
+
+    app.ticker.add(animate);
+}
