@@ -1,4 +1,4 @@
-import { Application, Assets, Sprite, Graphics, Ticker } from 'pixi.js';
+import { Application, Assets, Sprite, Graphics, Ticker, Container, TextStyle, Text } from 'pixi.js';
 import {createMap} from "./createMap.js";
 import {createTower, bow} from "./createTower.js";
 import {spawnEnemies} from "./spawnEnemies.js";
@@ -145,11 +145,12 @@ function shootArrow(enemy: EnemyWithHp, damage: number) {
                 const deathX = enemy.x;
                 const deathY = enemy.y;
                 if (enemy.parent) enemy.parent.removeChild(enemy);
+                gameInfo.enemiesKilled++;
 
                 const index = gameInfo.enemies.indexOf(enemy);
                 if (index !== -1) gameInfo.enemies.splice(index, 1);
 
-                spawnDeathParticles(deathX, deathY);
+                spawnParticles(deathX, deathY);
             }
 
             enemy.isTargeted = false;
@@ -193,7 +194,7 @@ interface Particle extends Graphics {
   vy: number;
 }
 
-function spawnDeathParticles(x: number, y: number) {
+function spawnParticles(x: number, y: number) {
     const particles: Graphics[] = [];
     const count = Math.floor(Math.random() * 5) + 3;
 
@@ -232,3 +233,83 @@ function spawnDeathParticles(x: number, y: number) {
 
     app.ticker.add(animate);
 }
+
+
+
+const waveContainer = new Container();
+waveContainer.x = window.innerWidth - 250;
+waveContainer.y = 50;
+app.stage.addChild(waveContainer);
+
+const bg = new Graphics();
+bg.beginFill(0xffffff);
+bg.drawRoundedRect(0, 0, 200, 40, 20);
+bg.endFill();
+waveContainer.addChild(bg);
+const bg2 = new Graphics();
+bg2.beginFill(0xffffff);
+bg2.drawRoundedRect(-5, -5, 210, 50, 25);
+bg2.endFill();
+bg2.alpha = 0.5;
+waveContainer.addChild(bg2);
+const fill = new Graphics();
+fill.beginFill(0x8cc63f);
+fill.drawRoundedRect(0, 0, 200, 40, 20);
+fill.endFill();
+waveContainer.addChild(fill);
+const mask = new Graphics();
+mask.beginFill(0xffffff);
+mask.drawRoundedRect(0, 0, 200, 40, 0);
+mask.endFill();
+fill.mask = mask;
+waveContainer.addChild(mask);
+
+const textStyle = new TextStyle({
+    fontFamily: 'Arial',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fill: 0x000000,
+});
+const textStyle2 = new TextStyle({
+    fontFamily: 'Arial',
+    fontSize: 24,
+    fontWeight: 'bold',
+    fill: 0x000000,
+});
+const text = new Text('WAVE', textStyle);
+text.x = 64;
+text.y = 11;
+waveContainer.addChild(text);
+const text2 = new Text('', textStyle2);
+text2.x = 115;
+text2.y = 4;
+waveContainer.addChild(text2);
+
+let startTime = 0;
+let totalEnemies = 0;
+
+function startWaveProgress() {
+    startTime = performance.now();
+    totalEnemies = gameInfo.enemiesOnWave;
+}
+
+startWaveProgress();
+
+app.ticker.add(() => {
+    text2.text = gameInfo.wave.toString();
+
+    const killed = gameInfo.enemiesKilled;
+    const total = totalEnemies || 1;
+    const progress = Math.min(killed / total, 1);
+    mask.scale.x = progress;
+    if (progress >= 1) {
+            gameInfo.enemiesHp += 2
+            gameInfo.wave++;
+            gameInfo.enemiesKilled = 0;
+            gameInfo.enemies = [];
+            gameInfo.enemiesOnWave += 2
+            gameInfo.respawnDuration = Math.max(200, gameInfo.respawnDuration - 20);
+            spawnEnemies();
+            startWaveProgress();
+    }
+});

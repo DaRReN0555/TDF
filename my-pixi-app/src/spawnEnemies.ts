@@ -12,19 +12,66 @@ const spawnFrames: Texture[] = await Promise.all(
   [1,2,3,4,5,6,7,8,9,10,11].map(i => Assets.load(`Sprites/Animations/UFO(1)${i}.png`))
 );
 
-const walkFrames: Texture[] = await Promise.all(
+const walkFrames1: Texture[] = await Promise.all(
   [1,2,3,4,5,6,5,4,3,2,1].map(i => Assets.load(`Sprites/Animations/UFO(1)Walk${i}.png`))
 );
+const walkFrames2: Texture[] = await Promise.all(
+  [1,2,3,4,5,6,5,4,3,2,1].map(i => Assets.load(`Sprites/Animations/UFO(2)Walk${i}.png`))
+);
+const walkFrames3: Texture[] = await Promise.all(
+  [1,2,3,4,5,6,5,4,3,2,1].map(i => Assets.load(`Sprites/Animations/UFO(3)Walk${i}.png`))
+);
+const walkFrames4: Texture[] = await Promise.all(
+  [1,2,3,4,5,6,5,4,3,2,1].map(i => Assets.load(`Sprites/Animations/UFO(4)Walk${i}.png`))
+);
+const walkFrames5: Texture[] = await Promise.all(
+  [1,2,3,4,5,6,5,4,3,2,1].map(i => Assets.load(`Sprites/Animations/UFO(5)Walk${i}.png`))
+);
+const walkFrames6: Texture[] = await Promise.all(
+  [1,2,3,4,5,6,5,4,3,2,1].map(i => Assets.load(`Sprites/Animations/UFO(6)Walk${i}.png`))
+);
+const walkFrames7: Texture[] = await Promise.all(
+  [1,2,3,4,5,6,5,4,3,2,1].map(i => Assets.load(`Sprites/Animations/UFO(7)Walk${i}.png`))
+);
+
+let walkFrames: Texture[]
 
 export async function spawnEnemies() {
     let spritePng = "Sprites/UFO/UFO(1).png";
-    if (gameInfo.wave <= 5) spritePng = "Sprites/UFO/UFO(1).png";
-    else if (gameInfo.wave > 5) spritePng = "Sprites/UFO/UFO(2).png";
-    else if (gameInfo.wave > 10) spritePng = "Sprites/UFO/UFO(3).png";
-    else if (gameInfo.wave > 15) spritePng = "Sprites/UFO/UFO(4).png";
-    else if (gameInfo.wave > 20) spritePng = "Sprites/UFO/UFO(5).png";
-    else if (gameInfo.wave > 25) spritePng = "Sprites/UFO/UFO(6).png";
-    else if (gameInfo.wave > 30) spritePng = "Sprites/UFO/UFO(7).png";
+    if (gameInfo.wave <= 5) {
+        spritePng = "Sprites/UFO/UFO(1).png"
+        walkFrames = walkFrames1;
+    }
+    else if (gameInfo.wave > 5) {
+        spritePng = "Sprites/UFO/UFO(2).png"
+        walkFrames = walkFrames2;
+        gameInfo.enemiesHp += 10;
+    }
+    else if (gameInfo.wave > 10) {
+        spritePng = "Sprites/UFO/UFO(3).png"
+        walkFrames = walkFrames3;
+        gameInfo.enemiesHp += 10;
+    }
+    else if (gameInfo.wave > 15) {
+        spritePng = "Sprites/UFO/UFO(4).png"
+        walkFrames = walkFrames4;
+        gameInfo.enemiesHp += 10;
+    }
+    else if (gameInfo.wave > 20) {
+        spritePng = "Sprites/UFO/UFO(5).png"
+        walkFrames = walkFrames5;
+        gameInfo.enemiesHp += 10;
+    }
+    else if (gameInfo.wave > 25) {
+        spritePng = "Sprites/UFO/UFO(6).png"
+        walkFrames = walkFrames6;
+        gameInfo.enemiesHp += 10;
+    }
+    else if (gameInfo.wave > 30) {
+        spritePng = "Sprites/UFO/UFO(7).png"
+        walkFrames = walkFrames7;
+        gameInfo.enemiesHp += 10;
+    }
 
     const SPAWN_INTERVAL = 600;
 
@@ -93,12 +140,11 @@ async function crushingAnimation(x: number, y: number): Promise<AnimatedSprite> 
         app.stage.addChild(anim);
 
         const totalFrames = anim.totalFrames;
-        const duration = 500;
         const startTime = performance.now();
 
         const tickerCallback = () => {
             const elapsed = performance.now() - startTime;
-            let t = Math.min(elapsed / duration, 1);
+            let t = Math.min(elapsed / gameInfo.respawnDuration, 1);
             t = easeInOutCubic(t);
             anim.gotoAndStop(Math.floor(t * (totalFrames - 1)));
 
@@ -120,12 +166,11 @@ async function sizeAnimation(entity: Sprite): Promise<void> {
         app.stage.addChild(anim);
 
         const totalFrames = anim.totalFrames;
-        const duration = 500;
         const startTime = performance.now();
 
         const tickerCallback = () => {
             const elapsed = performance.now() - startTime;
-            let t = Math.min(elapsed / duration, 1);
+            let t = Math.min(elapsed / gameInfo.respawnDuration, 1);
             t = easeInOutCubic(t);
             anim.gotoAndStop(Math.floor(t * (totalFrames - 1)));
 
@@ -154,12 +199,11 @@ async function crushingReverseAnimation(entity: Sprite): Promise<void> {
         app.stage.addChildAt(anim, app.stage.getChildIndex(entity));
 
         const totalFrames = anim.totalFrames;
-        const duration = 500;
         const startTime = performance.now();
 
         const tickerCallback = () => {
             const elapsed = performance.now() - startTime;
-            let t = Math.min(elapsed / duration, 1);
+            let t = Math.min(elapsed / gameInfo.respawnDuration, 1);
             t = easeInOutCubic(t);
             anim.gotoAndStop(Math.floor(t * (totalFrames - 1)));
 

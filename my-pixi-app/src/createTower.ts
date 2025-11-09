@@ -60,19 +60,44 @@ export async function createTower() {
 
   towerContainer
     .on('pointerover', () => {
+      ellipse
+        .clear()
+        .ellipse(tower.x + tower.width / 2 - 65, tower.y + tower.height / 2 + 35, gameInfo.radiusX, gameInfo.radiusY)
+        .stroke({ width: 4, color: "white" });
+      ellipse.alpha = 0
+       app.stage.addChild(ellipse);
+      let startTime = performance.now();
+      let duration = 300;
+      const animateEllipse = () => {
+        const elapsed = performance.now() - startTime;
+        let t = Math.min(elapsed / duration, 1);
+        t = easeInOutCubic(t);
+        ellipse.alpha = t
+        if (t >= 1) {
+          app.ticker.remove(animateEllipse);
+        }
+      }
+      app.ticker.add(animateEllipse);
       hover = true;
       if (!scaleAnimating) {
         scaleAnimating = true;
         requestAnimationFrame(animateScale);
       }
-      ellipse
-        .clear()
-        .ellipse(tower.x + tower.width / 2 - 65, tower.y + tower.height / 2 + 35, gameInfo.radiusX, gameInfo.radiusY)
-        .stroke({ width: 4, color: "white" });
-       app.stage.addChild(ellipse);
     })
     .on('pointerout', () => {
-      app.stage.removeChild(ellipse);
+      let startTime = performance.now();
+      let duration = 50;
+      const animateEllipse = () => {
+        const elapsed = performance.now() - startTime;
+        let t = Math.min(elapsed / duration, 1);
+        t = easeInOutCubic(t);
+        ellipse.alpha = 1 - t
+        if (ellipse.alpha <= 0) {
+          app.ticker.remove(animateEllipse);
+          app.stage.removeChild(ellipse);
+        }
+      }
+      app.ticker.add(animateEllipse);
       hover = false;
       if (!scaleAnimating) {
         scaleAnimating = true;
@@ -82,5 +107,4 @@ export async function createTower() {
   app.stage.addChild(towerContainer);
   return towerContainer;
 }
-
 
