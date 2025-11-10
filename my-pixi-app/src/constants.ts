@@ -4,6 +4,7 @@ export const gameInfo: {
     blocks: Array<Array<number>>,
     damage: number,
     money: number,
+    moneyPerKill: number,
     hp: number,
     wave: number,
     enemiesHp: number,
@@ -13,20 +14,23 @@ export const gameInfo: {
     enemiesLeft: number,
     enemiesKilled: number,
     enemiesOnWave: number,
+    enemiesDamage: number,
     enemies: Array<Sprite>
 } = {
     blocks: [],
     damage: 5,
     money: 0,
+    moneyPerKill: 5,
     hp: 20,
     wave: 1,
-    enemiesHp: 10,
+    enemiesHp: 5,
     radiusX: 350,
     radiusY: 200,
     respawnDuration: 500,
     enemiesLeft: 0,
     enemiesKilled: 0,
     enemiesOnWave: 4,
+    enemiesDamage: 4,
     enemies: [],
 }
 

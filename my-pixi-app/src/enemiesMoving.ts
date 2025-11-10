@@ -26,7 +26,10 @@ function updateEnemies(deltaTime: Ticker): void {
         if (dist < 50) {
             k++
             if(k > 100) k = 0;
-            if(k == 100) spawnParticles(tower.x, tower.y + 100);
+            if(k == 100) {
+                spawnParticles(tower.x, tower.y + 100)
+                gameInfo.hp -= gameInfo.enemiesDamage;
+            }
             continue;
         }
 
