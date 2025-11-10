@@ -16,6 +16,9 @@ export const gameInfo: {
     enemiesOnWave: number,
     enemiesDamage: number,
     enemies: Array<Sprite>
+    shopHp: number,
+    shopRange: number,
+    shopMoneyWave: number
 } = {
     blocks: [],
     damage: 5,
@@ -32,15 +35,14 @@ export const gameInfo: {
     enemiesOnWave: 4,
     enemiesDamage: 4,
     enemies: [],
+    shopHp: 20,
+    shopRange: 20,
+    shopMoneyWave: 20,
 }
 
 export const enemySize = {
     x: 32,
     y: 40
-}
-export const bossSize = {
-    x: 64,
-    y: 80
 }
 
 const walkFrames: Texture[] = await Promise.all(

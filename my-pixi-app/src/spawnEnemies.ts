@@ -1,5 +1,5 @@
 import { Assets, Sprite, AnimatedSprite, Texture } from 'pixi.js';
-import { gameInfo, enemySize, bossSize} from './constants';
+import { gameInfo, enemySize } from './constants';
 import { app } from './main.js';
 
 const crushingFrames: Texture[] = await Promise.all(

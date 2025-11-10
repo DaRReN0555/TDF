@@ -4,7 +4,6 @@ import { gameInfo } from "./constants.js";
 import { tower } from "./main.js";
 
 const ENEMY_SPEED = 1.5;
-let ifAttacking = false;
 let k = 0
 
 export function startEnemyMovement() {

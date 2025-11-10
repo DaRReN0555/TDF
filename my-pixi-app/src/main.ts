@@ -387,6 +387,13 @@ moneyBg2.alpha = 0.5;
 moneyBg2.zIndex = tower.zIndex + 2;
 moneyContainer.addChild(moneyBg2);
 
+const coinShadow = new Graphics() 
+coinShadow.beginFill(0x000000);
+coinShadow.drawRoundedRect(-20, -13, 20, 20, 30);
+coinShadow.endFill();
+coinShadow.alpha = 0.2;
+moneyContainer.addChild(coinShadow);
+
 const coinIcon = new Sprite(coin);
 coinIcon.x = -20;
 coinIcon.y = -15
@@ -396,6 +403,8 @@ coinIcon.zIndex = tower.zIndex + 2;
 coinIcon.alpha = 0.8;
 moneyContainer.addChild(coinIcon);
 
+coinShadow.zIndex = coinIcon.zIndex;
+
 const textStyle5 = new TextStyle({
     fontFamily: 'Arial',
     fontSize: 26,
@@ -404,8 +413,9 @@ const textStyle5 = new TextStyle({
 });
 
 const coinText = new Text('', textStyle5);
-coinText.x = 3
-coinText.y = 3;
+coinText.anchor.set(0.5);
+coinText.x = 10
+coinText.y = 18;
 coinText.zIndex = tower.zIndex + 2;
 moneyContainer.addChild(coinText);
 
@@ -457,32 +467,169 @@ function spawnCoins(x: number, y: number) {
     }
 }
 
+const textStyleShop1 = new TextStyle({
+    fontFamily: 'Arial',
+    fontSize: 35,
+    fontWeight: 'bold',
+    fill: "#d6be35ff",
+});
+
+const textStyleShop2 = new TextStyle({
+    fontFamily: 'Arial',
+    fontSize: 65,
+    fontWeight: 'bold',
+    fill: "#ffffffff",
+});
+
+const textStyleShop3 = new TextStyle({
+    fontFamily: 'Arial',
+    fontSize: 26,
+    fontWeight: 'bold',
+    fill: "#d82929ff",
+});
+
+const shopMenu = new Container();
+shopMenu.x = tower.x - 650;
+shopMenu.y = window.innerHeight - 300;
+app.stage.addChild(shopMenu);
+
+const shopMenuBg = new Graphics();
+shopMenuBg.beginFill("#3c7c6cff");
+shopMenuBg.drawRoundedRect(0, 0, 1300, 400, 20);
+shopMenuBg.endFill();
+shopMenuBg.alpha = 0.5;
+shopMenuBg.zIndex = tower.zIndex + 2;
+shopMenu.addChild(shopMenuBg);
+
+const damageButton = new Graphics()
+damageButton.beginFill("#2f685aff");
+damageButton.drawRoundedRect(30, 30, 287.5, 300, 20);
+damageButton.endFill();
+damageButton.zIndex = tower.zIndex + 2;
+shopMenu.addChild(damageButton);
+
+const damageText  = new Text('DAMAGE', textStyleShop1);
+damageText.x = 96;
+damageText.y = 50;
+damageText.zIndex = tower.zIndex + 2;
+shopMenu.addChild(damageText);
+
+const damageText2  = new Text('', textStyleShop2);
+damageText2.anchor.set(0.5);
+damageText2.x = 492;
+damageText2.y = 140;
+damageText2.zIndex = tower.zIndex + 2;
+shopMenu.addChild(damageText2);
+
+const hpButton2 = new Graphics()
+hpButton2.beginFill("#2f685aff");
+hpButton2.drawRoundedRect(347.5, 30, 287.5, 300, 20);
+hpButton2.endFill();
+hpButton2.zIndex = tower.zIndex + 2;
+shopMenu.addChild(hpButton2);
+
+const hpText  = new Text('HEALTH', textStyleShop1);
+hpText.x = 422;
+hpText.y = 50;
+hpText.zIndex = tower.zIndex + 2;
+shopMenu.addChild(hpText);
+
+const hpText2  = new Text('', textStyleShop2);
+hpText2.anchor.set(0.5);
+hpText2.x = 492;
+hpText2.y = 140;
+hpText2.zIndex = tower.zIndex + 2;
+shopMenu.addChild(hpText2);
+
+const rangeButton3 = new Graphics()
+rangeButton3.beginFill("#2f685aff");
+rangeButton3.drawRoundedRect(665, 30, 287.5, 300, 20);
+rangeButton3.endFill();
+rangeButton3.zIndex = tower.zIndex + 2;
+shopMenu.addChild(rangeButton3);
+
+const rangeText  = new Text('RANGE', textStyleShop1);
+rangeText.x = 745;
+rangeText.y = 50;
+rangeText.zIndex = tower.zIndex + 2;
+shopMenu.addChild(rangeText);
+
+const rangeText2  = new Text('', textStyleShop2);
+rangeText2.anchor.set(0.5);
+rangeText2.x = 492;
+rangeText2.y = 140;
+rangeText2.zIndex = tower.zIndex + 2;
+shopMenu.addChild(rangeText2);
+
+const moneyWaveButton4 = new Graphics()
+moneyWaveButton4.beginFill("#2f685aff");
+moneyWaveButton4.drawRoundedRect(982.5, 30, 287.5, 300, 20);
+moneyWaveButton4.endFill();
+moneyWaveButton4.zIndex = tower.zIndex + 2;
+shopMenu.addChild(moneyWaveButton4);
+
+const moneyWaveText  = new Text('MONEYWAVE', textStyleShop1);
+moneyWaveText.x = 1013;
+moneyWaveText.y = 50;
+moneyWaveText.zIndex = tower.zIndex + 2;
+shopMenu.addChild(moneyWaveText);
+
+const moneyWaveText2  = new Text('', textStyleShop2);
+moneyWaveText2.anchor.set(0.5);
+moneyWaveText2.x = 492;
+moneyWaveText2.y = 140;
+moneyWaveText2.zIndex = tower.zIndex + 2;
+shopMenu.addChild(moneyWaveText2);
+
+const shopHiddenY = window.innerHeight;
+const shopVisibleY = window.innerHeight - 300;
+shopMenu.y = shopHiddenY;
+
+let shopTargetY = shopHiddenY;
+let shopStartY = shopHiddenY;
+let shopAnimStart = 0;
+let shopAnimDuration = 600;
+let shopAnimating = false;
+
 app.ticker.add(() => {
-    if(gameInfo.money < 10) {
-        coinText.x = 3
-        coinText.text = gameInfo.money.toString();
+    const mousePos = app.renderer.events.pointer.global;
+    const isHovered =
+        mousePos.x > tower.x - 640 &&
+        mousePos.x < tower.x + 640 &&
+        mousePos.y > window.innerHeight - 300;
+
+    const newTargetY = isHovered ? shopVisibleY : shopHiddenY;
+    if (newTargetY !== shopTargetY) {
+        shopStartY = shopMenu.y;
+        shopTargetY = newTargetY;
+        shopAnimStart = performance.now();
+        shopAnimating = true;
     }
-    if(gameInfo.money >= 10) {
-        coinText.x = -4
-        coinText.text = gameInfo.money.toString();
+
+    if (shopAnimating) {
+        const elapsed = performance.now() - shopAnimStart;
+        let t = Math.min(elapsed / shopAnimDuration, 1);
+        t = easeInOutCubic(t);
+
+        shopMenu.y = shopStartY + (shopTargetY - shopStartY) * t;
+
+        if (t >= 1) {
+            shopAnimating = false;
+        }
     }
-    if(gameInfo.money >= 100) {
-        coinText.x = -12
-        coinText.text = gameInfo.money.toString();
-    }
+
+    hpText2.text = gameInfo.shopHp.toString();
     if(gameInfo.money >= 1000) {
-        if(gameInfo.money % 1000 != 0) coinText.x = -18
-        if(gameInfo.money % 1000 == 0) coinText.x = -6
         let num = gameInfo.money / 1000
         let rounded = Number(num.toFixed(1))
         coinText.text = `${rounded}K`;
     }
-
     if(gameInfo.hp <= 0) {
         gameInfo.hp = 0;
     }
     healthText.text = gameInfo.hp.toString();
     text2.text = gameInfo.wave.toString();
+    coinText.text = gameInfo.money.toString();
 
     const killed = gameInfo.enemiesKilled;
     const total = totalEnemies || 1;
