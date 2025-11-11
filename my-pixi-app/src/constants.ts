@@ -1,4 +1,4 @@
-import { Sprite, Assets, Texture, AnimatedSprite } from 'pixi.js';
+import { Sprite, Assets, Texture, AnimatedSprite, } from 'pixi.js';
 import { app } from './main.js';
 export const gameInfo: {
     blocks: Array<Array<number>>,

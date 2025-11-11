@@ -46,31 +46,37 @@ export async function spawnEnemies() {
         spritePng = "Sprites/UFO/UFO(2).png"
         walkFrames = walkFrames2;
         gameInfo.enemiesHp += 10;
+        gameInfo.moneyPerKill += 10
     }
     else if (gameInfo.wave > 10) {
         spritePng = "Sprites/UFO/UFO(3).png"
         walkFrames = walkFrames3;
         gameInfo.enemiesHp += 10;
+        gameInfo.moneyPerKill += 10
     }
     else if (gameInfo.wave > 15) {
         spritePng = "Sprites/UFO/UFO(4).png"
         walkFrames = walkFrames4;
         gameInfo.enemiesHp += 10;
+        gameInfo.moneyPerKill += 10
     }
     else if (gameInfo.wave > 20) {
         spritePng = "Sprites/UFO/UFO(5).png"
         walkFrames = walkFrames5;
         gameInfo.enemiesHp += 10;
+        gameInfo.moneyPerKill += 10
     }
     else if (gameInfo.wave > 25) {
         spritePng = "Sprites/UFO/UFO(6).png"
         walkFrames = walkFrames6;
         gameInfo.enemiesHp += 10;
+        gameInfo.moneyPerKill += 10
     }
     else if (gameInfo.wave > 30) {
         spritePng = "Sprites/UFO/UFO(7).png"
         walkFrames = walkFrames7;
         gameInfo.enemiesHp += 10;
+        gameInfo.moneyPerKill += 10
     }
 
     const SPAWN_INTERVAL = 600;
