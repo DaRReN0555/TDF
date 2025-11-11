@@ -18,7 +18,7 @@ function updateEnemies(deltaTime: Ticker): void {
         if (!enemy || !enemy.x || !enemy.y) continue;
 
         let dx = tower.x - enemy.x;
-        let dy = tower.y + 120 - enemy.y;
+        let dy = tower.y - enemy.y + 25;
 
         const dist = Math.sqrt(dx * dx + dy * dy);
 
@@ -26,7 +26,7 @@ function updateEnemies(deltaTime: Ticker): void {
             k++
             if(k > 100) k = 0;
             if(k == 100) {
-                spawnParticles(tower.x, tower.y + 100)
+                spawnParticles(tower.x, tower.y + 20)
                 gameInfo.hp -= gameInfo.enemiesDamage;
             }
             continue;

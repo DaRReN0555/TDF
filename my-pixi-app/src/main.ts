@@ -64,7 +64,7 @@ export function towerAttack(deltaMS: number) {
         isInsideTowerEllipse(
             enemy.x, enemy.y,
             tower.x + tower.width / 2 - 65,
-            tower.y + tower.height / 2 + 35,
+            tower.y + tower.height / 2 - 44,
             gameInfo.radiusX,
             gameInfo.radiusY
         ) && !(enemy as EnemyWithHp).isTargeted
@@ -93,7 +93,7 @@ function shootArrow(enemy: EnemyWithHp, damage: number) {
         const orbitY = Math.sin(angle) * orbitRadius;
 
         bow.x = tower.width / 2 + orbitX - 65;
-        bow.y = tower.height / 2 + orbitY - 40;
+        bow.y = tower.height / 2 + orbitY - 120;
         bow.rotation = angle + Math.PI
 
         const recoilDist = 8;
@@ -313,7 +313,7 @@ startWaveProgress();
 
 const healthContainer = new Container();
 healthContainer.x = tower.x - 80;
-healthContainer.y = tower.y - 50;
+healthContainer.y = tower.y - 135;
 app.stage.addChild(healthContainer);
 
 const healthBg = new Graphics();
@@ -422,7 +422,7 @@ function spawnCoins(x: number, y: number) {
     for (let i = 0; i < coinsCount; i++) {
         const coinSprite = new Sprite(coin);
         coinSprite.anchor.set(0.5);
-        coinSprite.scale.set(0.02);
+        coinSprite.scale.set(0.05);
         coinSprite.x = x + (Math.random() - 0.5) * 20;
         coinSprite.y = y + (Math.random() - 0.5) * 20;
         coinSprite.zIndex = tower.zIndex + 5;
@@ -452,7 +452,7 @@ function spawnCoins(x: number, y: number) {
             const ease = easeInOutCubic(t);
             coinSprite.x = start.x + (end.x - start.x) * ease;
             coinSprite.y = start.y + (end.y - start.y) * ease;
-            const scale = 0.02 - 0.01 * ease;
+            const scale = 0.05 - 0.03 * ease;
             coinSprite.scale.set(scale);
             if (t < 1) {
                 requestAnimationFrame(animate);
@@ -579,160 +579,6 @@ moneyWaveText2.y = 140;
 moneyWaveText2.zIndex = tower.zIndex + 2;
 shopMenu.addChild(moneyWaveText2);
 
-const buttons = new Container()
-buttons.x = 75;
-buttons.y = 200;
-buttons.zIndex = tower.zIndex + 3;
-shopMenu.addChild(buttons);
-
-const button1 = new Graphics();
-button1.beginFill("#d6be35ff");
-button1.drawRoundedRect(0, 0, 200, 60, 20);
-button1.endFill();
-buttons.addChild(button1);
-
-const button1Bg = new Graphics();
-button1Bg.beginFill("#3c7c6cff");
-button1Bg.drawRoundedRect(-10, -10, 220, 80, 20);
-button1Bg.endFill();
-button1Bg.alpha = 0.5;
-button1.addChild(button1Bg);
-
-const button1Text  = new Text('', textStyleShop3);
-button1Text.anchor.set(0.5);
-button1Text.x = 100;
-button1Text.y = 30;
-button1Text.zIndex = tower.zIndex + 2;
-button1Text.alpha = 0.6
-button1.addChild(button1Text);
-
-const coinShadow1 = new Graphics() 
-coinShadow1.beginFill(0x000000);
-coinShadow1.drawRoundedRect(-15, -8, 30, 30, 30);
-coinShadow1.endFill();
-coinShadow1.alpha = 0.2;
-buttons.addChild(coinShadow1);
-
-const coinIcon1 = new Sprite(coin);
-coinIcon1.x = -15;
-coinIcon1.y = -12
-coinIcon1.width = 30;
-coinIcon1.height = 30;
-coinIcon1.zIndex = tower.zIndex + 2;
-coinIcon1.alpha = 1;
-buttons.addChild(coinIcon1);
-
-const button2 = new Graphics();
-button2.beginFill("#d6be35ff");
-button2.drawRoundedRect(320, 0, 200, 60, 20);
-button2.endFill();
-buttons.addChild(button2);
-
-const button2Bg = new Graphics();
-button2Bg.beginFill("#3c7c6cff");
-button2Bg.drawRoundedRect(310, -10, 220, 80, 20);
-button2Bg.endFill();
-button2Bg.alpha = 0.5;
-button2.addChild(button2Bg);
-
-const coinShadow2 = new Graphics() 
-coinShadow2.beginFill(0x000000);
-coinShadow2.drawRoundedRect(305, -8, 30, 30, 30);
-coinShadow2.endFill();
-coinShadow2.alpha = 0.2;
-buttons.addChild(coinShadow2);
-
-const coinIcon2 = new Sprite(coin);
-coinIcon2.x = 305;
-coinIcon2.y = -12
-coinIcon2.width = 30;
-coinIcon2.height = 30;
-coinIcon2.zIndex = tower.zIndex + 2;
-coinIcon2.alpha = 1;
-buttons.addChild(coinIcon2);
-
-const button2Text  = new Text('', textStyleShop3);
-button2Text.anchor.set(0.5);
-button2Text.x = 420;
-button2Text.y = 30;
-button2Text.zIndex = tower.zIndex + 2;
-button2Text.alpha = 0.6
-button2.addChild(button2Text);
-
-const button3 = new Graphics();
-button3.beginFill("#d6be35ff");
-button3.drawRoundedRect(635, 0, 200, 60, 20);
-button3.endFill();
-buttons.addChild(button3);
-
-const button3Bg = new Graphics();
-button3Bg.beginFill("#3c7c6cff");
-button3Bg.drawRoundedRect(625, -10, 220, 80, 20);
-button3Bg.endFill();
-button3Bg.alpha = 0.5;
-button3.addChild(button3Bg);
-
-const coinShadow3 = new Graphics() 
-coinShadow3.beginFill(0x000000);
-coinShadow3.drawRoundedRect(620, -8, 30, 30, 30);
-coinShadow3.endFill();
-coinShadow3.alpha = 0.2;
-buttons.addChild(coinShadow3);
-
-const coinIcon3 = new Sprite(coin);
-coinIcon3.x = 620;
-coinIcon3.y = -12
-coinIcon3.width = 30;
-coinIcon3.height = 30;
-coinIcon3.zIndex = tower.zIndex + 2;
-coinIcon3.alpha = 1;
-buttons.addChild(coinIcon3);
-
-const button3Text  = new Text('', textStyleShop3);
-button3Text.anchor.set(0.5);
-button3Text.x = 735;
-button3Text.y = 30;
-button3Text.zIndex = tower.zIndex + 2;
-button3Text.alpha = 0.6
-button3.addChild(button3Text);
-
-const button4 = new Graphics();
-button4.beginFill("#d6be35ff");
-button4.drawRoundedRect(952, 0, 200, 60, 20);
-button4.endFill();
-buttons.addChild(button4);
-
-const button4Bg = new Graphics();
-button4Bg.beginFill("#3c7c6cff");
-button4Bg.drawRoundedRect(942, -10, 220, 80, 20);
-button4Bg.endFill();
-button4Bg.alpha = 0.5;
-button4.addChild(button4Bg);
-
-const coinShadow4 = new Graphics() 
-coinShadow4.beginFill(0x000000);
-coinShadow4.drawRoundedRect(937, -8, 30, 30, 30);
-coinShadow4.endFill();
-coinShadow4.alpha = 0.2;
-buttons.addChild(coinShadow4);
-
-const coinIcon4 = new Sprite(coin);
-coinIcon4.x = 937;
-coinIcon4.y = -12
-coinIcon4.width = 30;
-coinIcon4.height = 30;
-coinIcon4.zIndex = tower.zIndex + 2;
-coinIcon4.alpha = 1;
-buttons.addChild(coinIcon4);
-
-const button4Text  = new Text('', textStyleShop3);
-button4Text.anchor.set(0.5);
-button4Text.x = 1054;
-button4Text.y = 30;
-button4Text.zIndex = tower.zIndex + 2;
-button4Text.alpha = 0.6
-button4.addChild(button4Text);
-
 interface UpgradeButton {
     button: Graphics;
     buttonBg: Graphics;
@@ -742,47 +588,126 @@ interface UpgradeButton {
     hovered: boolean;
 }
 
-const upgradeButtons: UpgradeButton[] = [
-    { button: button1, buttonBg: button1Bg, buttonText: button1Text, cost: 10, upgradeFunc: () => { gameInfo.damage = Math.floor(gameInfo.damage * 1.3); }, hovered: false },
-    { button: button2, buttonBg: button2Bg, buttonText: button2Text, cost: 10, upgradeFunc: () => { gameInfo.shopHp = Math.floor(gameInfo.hp * 1.3); gameInfo.hp = gameInfo.shopHp; }, hovered: false },
-    { button: button3, buttonBg: button3Bg, buttonText: button3Text, cost: 50, upgradeFunc: () => { gameInfo.radiusX += 10, gameInfo.radiusY += 10 }, hovered: false },
-    { button: button4, buttonBg: button4Bg, buttonText: button4Text, cost: 10, upgradeFunc: () => { gameInfo.shopMoneyWave += 20 }, hovered: false },
-];
+const buttons = new Container();
+buttons.x = 75;
+buttons.y = 200;
+buttons.zIndex = tower.zIndex + 3;
+shopMenu.addChild(buttons);
 
-for (const btn of upgradeButtons) {
-    btn.button.interactive = true;
-    (btn.button as any).buttonMode = true;
+function createUpgradeButton(x: number, cost: number): UpgradeButton {
+    const container = new Container();
+    container.x = x;
+    container.y = 0;
+    buttons.addChild(container);
 
-    btn.button.on('pointerover', () => {
-        btn.hovered = true;
+    const buttonBg = new Graphics();
+    buttonBg.beginFill(0x3c7c6c);
+    buttonBg.drawRoundedRect(-10, -10, 220, 80, 30);
+    buttonBg.endFill();
+    buttonBg.pivot.set(100, 30);
+    buttonBg.alpha = 0.5;
+    buttonBg.x = 100;
+    buttonBg.y = 30;
+    container.addChild(buttonBg);
+
+    const button = new Graphics();
+    button.beginFill(0xd6be35);
+    button.drawRoundedRect(0, 0, 200, 60, 20);
+    button.endFill();
+    button.pivot.set(100, 30);
+    button.x = 100;
+    button.y = 30;
+    container.addChild(button);
+
+    const buttonText = new Text(cost.toString(), textStyleShop3);
+    buttonText.anchor.set(0.5);
+    buttonText.x = 100;
+    buttonText.y = 30;
+    container.addChild(buttonText);
+    const coinIcon = new Sprite(coin);
+    coinIcon.anchor.set(0.5);
+    coinIcon.x = -10;
+    coinIcon.y = 0;
+    coinIcon.width = 30;
+    coinIcon.height = 30;
+    coinIcon.zIndex = tower.zIndex + 2;
+    container.addChild(coinIcon);
+    const coinShadow = new Graphics();
+    coinShadow.beginFill(0x000000);
+    coinShadow.drawRoundedRect(-15, 0, 30, 30, 15);
+    coinShadow.endFill();
+    coinShadow.alpha = 0.2;
+    coinShadow.x = coinIcon.x;
+    coinShadow.y = coinIcon.y + 6;
+    container.addChild(coinShadow);
+    container.interactive = true;
+    (container as any).buttonMode = true;
+
+    const btnData: UpgradeButton = {
+        button,
+        buttonBg,
+        buttonText,
+        cost,
+        upgradeFunc: () => {},
+        hovered: false,
+    };
+
+    container.on('pointerover', () => btnData.hovered = true);
+    container.on('pointerout', () => {
+        btnData.hovered = false;
+        btnData.button.tint = 0xffffff;
+        btnData.buttonBg.tint = 0xffffff;
     });
-    btn.button.on('pointerout', () => {
-        btn.hovered = false;
-        btn.button.tint = 0xffffff;
-        btn.buttonBg.tint = 0xffffff;
-    });
-    btn.button.on('pointerdown', () => {
-        if (gameInfo.money >= btn.cost) {
-            gameInfo.money -= btn.cost;
-            if(btn.button == button3) btn.cost = Math.floor(btn.cost * 1.6)
-            else btn.cost = Math.floor(btn.cost * 1.35)
-            btn.upgradeFunc();
+    container.on('pointerdown', () => {
+        if (gameInfo.money >= btnData.cost) {
+            gameInfo.money -= btnData.cost;
+            btnData.cost = Math.floor(btnData.cost * 1.35);
+            btnData.upgradeFunc();
         }
     });
+    app.ticker.add(() => {
+        const targetScale = btnData.hovered ? 1.1 : 1.0;
+        button.scale.x += (targetScale - button.scale.x) * 0.2;
+        button.scale.y += (targetScale - button.scale.y) * 0.2;
+        buttonBg.scale.x += (targetScale - buttonBg.scale.x) * 0.2;
+        buttonBg.scale.y += (targetScale - buttonBg.scale.y) * 0.2;
+        coinIcon.x = -10 * button.scale.x;
+        coinIcon.y = 0 * button.scale.y;
+        coinShadow.x = coinIcon.x;
+        coinShadow.y = coinIcon.y - 12 * button.scale.y;
+    });
+
+    return btnData;
 }
+
+const upgradeButtons: UpgradeButton[] = [
+    createUpgradeButton(0, 10),
+    createUpgradeButton(316, 10),
+    createUpgradeButton(633, 50),
+    createUpgradeButton(952, 10),
+];
+upgradeButtons[0].upgradeFunc = () => { gameInfo.damage = Math.floor(gameInfo.damage * 1.3); };
+upgradeButtons[1].upgradeFunc = () => { gameInfo.shopHp = Math.floor(gameInfo.hp * 1.3); gameInfo.hp = gameInfo.shopHp; };
+upgradeButtons[2].upgradeFunc = () => { gameInfo.radiusX += 10; gameInfo.radiusY += 10; gameInfo.shopRange += 1; };
+upgradeButtons[3].upgradeFunc = () => { gameInfo.shopMoneyWave += 20; };
 
 app.ticker.add(() => {
     for (const btn of upgradeButtons) {
-        btn.buttonText.text = btn.cost.toString();
-        if (btn.hovered) {
-            if (gameInfo.money >= btn.cost) {
-                btn.button.tint = 0x00ff00;
-                btn.buttonBg.tint = 0x00ff00;
-            } else {
-                btn.button.tint = 0xff0000;
-                btn.buttonBg.tint = 0xff0000;
-            }
+        if (gameInfo.money >= btn.cost) {
+            btn.button.tint = 0x00ff00;
+            btn.buttonBg.tint = 0x00ff00;
+        } else {
+            btn.button.tint = 0xff0000;
+            btn.buttonBg.tint = 0xff0000;
         }
+
+        btn.buttonText.text = btn.cost.toString();
+
+        const targetScale = btn.hovered ? 1.1 : 1.0;
+        btn.button.scale.x += (targetScale - btn.button.scale.x) * 0.2;
+        btn.button.scale.y += (targetScale - btn.button.scale.y) * 0.2;
+        btn.buttonBg.scale.x += (targetScale - btn.buttonBg.scale.x) * 0.2;
+        btn.buttonBg.scale.y += (targetScale - btn.buttonBg.scale.y) * 0.2;
     }
 });
 
@@ -829,6 +754,7 @@ app.ticker.add(() => {
     damageText2.text = gameInfo.damage.toString();
     rangeText2.text = gameInfo.shopRange.toString();
     moneyWaveText2.text = gameInfo.shopMoneyWave.toString();
+    coinText.text = Math.floor(gameInfo.money).toString();
     if(gameInfo.money >= 1000) {
         let num = gameInfo.money / 1000
         let rounded = Number(num.toFixed(1))
@@ -839,7 +765,7 @@ app.ticker.add(() => {
     }
     healthText.text = gameInfo.hp.toString();
     text2.text = gameInfo.wave.toString();
-    coinText.text = gameInfo.money.toString();
+    
 
     const killed = gameInfo.enemiesKilled;
     const total = totalEnemies || 1;

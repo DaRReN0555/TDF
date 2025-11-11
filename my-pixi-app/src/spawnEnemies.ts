@@ -2,12 +2,8 @@ import { Assets, Sprite, AnimatedSprite, Texture } from 'pixi.js';
 import { gameInfo, enemySize } from './constants';
 import { app } from './main.js';
 
-const crushingFrames: Texture[] = await Promise.all(
-  [1,2,3,4,5,6,7].map(i => Assets.load(`Sprites/Animations/${i}.png`))
-);
-const crushingReverseFrames: Texture[] = await Promise.all(
-  [7,6,5,4,3,2,1].map(i => Assets.load(`Sprites/Animations/${i}.png`))
-);
+const crushingFrame = await Assets.load(`Sprites/Animations/Ellipse 5.png`)
+
 const spawnFrames: Texture[] = await Promise.all(
   [1,2,3,4,5,6,7,8,9,10,11].map(i => Assets.load(`Sprites/Animations/UFO(1)${i}.png`))
 );
@@ -134,29 +130,30 @@ function pickSpawnPos(entity: Sprite) {
     entity.y = positions[random].y + rangeY;
 }
 
-async function crushingAnimation(x: number, y: number): Promise<AnimatedSprite> {
+async function crushingAnimation(x: number, y: number): Promise<Sprite> {
     return new Promise(resolve => {
-        const anim = new AnimatedSprite(crushingFrames);
-        anim.x = x;
-        anim.y = y;
-        anim.anchor.set(0.5);
-        anim.width = 50;
-        anim.height = 30;
-        anim.loop = false;
-        app.stage.addChild(anim);
+        const firstTexture = crushingFrame
+        const sprite = new Sprite(firstTexture);
+        sprite.x = x;
+        sprite.y = y;
+        sprite.anchor.set(0.5);
+        sprite.scale.set(1);
+        app.stage.addChild(sprite);
 
-        const totalFrames = anim.totalFrames;
         const startTime = performance.now();
+        const startScale = 0.01;
+        const endScale = 1;
 
         const tickerCallback = () => {
             const elapsed = performance.now() - startTime;
             let t = Math.min(elapsed / gameInfo.respawnDuration, 1);
             t = easeInOutCubic(t);
-            anim.gotoAndStop(Math.floor(t * (totalFrames - 1)));
+
+            sprite.scale.set(startScale + (endScale - startScale) * t);
 
             if (t >= 1) {
                 app.ticker.remove(tickerCallback);
-                resolve(anim);
+                resolve(sprite);
             }
         };
 
@@ -195,23 +192,24 @@ async function sizeAnimation(entity: Sprite): Promise<void> {
 
 async function crushingReverseAnimation(entity: Sprite): Promise<void> {
     return new Promise(resolve => {
-        const anim = new AnimatedSprite(crushingReverseFrames);
+        const firstTexture = crushingFrame
+        const anim = new Sprite(firstTexture);
         anim.x = entity.x;
         anim.y = entity.y;
         anim.anchor.set(0.5);
-        anim.width = 50;
-        anim.height = 30;
-        anim.loop = false;
+        anim.scale.set(2);
         app.stage.addChildAt(anim, app.stage.getChildIndex(entity));
 
-        const totalFrames = anim.totalFrames;
         const startTime = performance.now();
+        const startScale = 1;
+        const endScale = 0.01;
 
         const tickerCallback = () => {
             const elapsed = performance.now() - startTime;
             let t = Math.min(elapsed / gameInfo.respawnDuration, 1);
             t = easeInOutCubic(t);
-            anim.gotoAndStop(Math.floor(t * (totalFrames - 1)));
+
+            anim.scale.set(startScale + (endScale - startScale) * t);
 
             if (t >= 1) {
                 app.ticker.remove(tickerCallback);

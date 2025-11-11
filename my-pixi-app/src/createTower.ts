@@ -20,15 +20,15 @@ export async function createTower() {
   bowContainer.setSize(27, 37);
   bowContainer.anchor.set(0.5, 0.5);
   bowContainer.x = towerContainer.width / 2 - 80;
-  bowContainer.y = towerContainer.height / 2 - 22;
+  bowContainer.y = towerContainer.height / 2 - 112;
   towerContainer.addChild(bowContainer);
   bow = bowContainer;
 
   towerContainer.width = 130;
   towerContainer.height = 166;
-  towerContainer.anchor.set(0.5, 0);
+  towerContainer.anchor.set(0.5, 0.5);
   towerContainer.x = gameInfo.blocks[17][0] + 5;
-  towerContainer.y = gameInfo.blocks[17][1] + 30;
+  towerContainer.y = gameInfo.blocks[17][1] + 120;
   towerContainer.interactive = true;
 
   let scaleAnimating = false;
@@ -62,7 +62,7 @@ export async function createTower() {
     .on('pointerover', () => {
       ellipse
         .clear()
-        .ellipse(tower.x + tower.width / 2 - 65, tower.y + tower.height / 2 + 35, gameInfo.radiusX, gameInfo.radiusY)
+        .ellipse(tower.x + tower.width / 2 - 65, tower.y + tower.height / 2 - 44, gameInfo.radiusX, gameInfo.radiusY)
         .stroke({ width: 4, color: "white" });
       ellipse.alpha = 0
        app.stage.addChild(ellipse);
