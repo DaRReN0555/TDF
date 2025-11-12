@@ -13,7 +13,7 @@ function easeInOutCubic(x: number): number {
 export async function createTower() {
   const towerContainer = new Sprite();
   const bowContainer = new Sprite();
-  const towerTexture = await Assets.load('Sprites/Towers/Archer/archer_level_1.png');
+  const towerTexture = await Assets.load(`Sprites/Towers/Archer/archer_level_1.png`);
   const bowTexture = await Assets.load('Sprites/Towers/Archer/bow_animation(1).png');
   towerContainer.texture = towerTexture;
   bowContainer.texture = bowTexture;
@@ -32,8 +32,10 @@ export async function createTower() {
   towerContainer.interactive = true;
 
   let scaleAnimating = false;
-  const baseScale = 1;
-  const targetScale = 1.1;
+  const baseWidth = 130;
+  const targetWidth = 140;
+  const baseHeight = 166;
+  const targetHeight = 176;
   let t = 0;
   const duration = 15;
 
@@ -48,8 +50,10 @@ export async function createTower() {
     }
 
     const eased = easeInOutCubic(t);
-    const scale = baseScale + (targetScale - baseScale) * eased;
-    towerContainer.scale.set(scale);
+    const scaleX = baseWidth + (targetWidth - baseWidth) * eased;
+    const scaleY = baseHeight + (targetHeight - baseHeight) * eased;
+    towerContainer.width = scaleX;
+    towerContainer.height = scaleY;
 
     if ((hover && t < 1) || (!hover && t > 0)) {
       requestAnimationFrame(animateScale);

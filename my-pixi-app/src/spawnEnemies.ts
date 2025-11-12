@@ -1,6 +1,7 @@
 import { Assets, Sprite, AnimatedSprite, Texture } from 'pixi.js';
 import { gameInfo, enemySize } from './constants';
-import { app } from './main.js';
+import { app, tower } from './main.js';
+import { createTower } from './createTower.js';
 
 const crushingFrame = await Assets.load(`Sprites/Animations/Ellipse 5.png`)
 
@@ -38,37 +39,37 @@ export async function spawnEnemies() {
         spritePng = "Sprites/UFO/UFO(1).png"
         walkFrames = walkFrames1;
     }
-    else if (gameInfo.wave > 5) {
+    else if (gameInfo.wave >= 5) {
         spritePng = "Sprites/UFO/UFO(2).png"
         walkFrames = walkFrames2;
         gameInfo.enemiesHp += 10;
         gameInfo.moneyPerKill += 10
     }
-    else if (gameInfo.wave > 10) {
+    else if (gameInfo.wave >= 10) {
         spritePng = "Sprites/UFO/UFO(3).png"
         walkFrames = walkFrames3;
         gameInfo.enemiesHp += 10;
         gameInfo.moneyPerKill += 10
     }
-    else if (gameInfo.wave > 15) {
+    else if (gameInfo.wave >= 15) {
         spritePng = "Sprites/UFO/UFO(4).png"
         walkFrames = walkFrames4;
         gameInfo.enemiesHp += 10;
         gameInfo.moneyPerKill += 10
     }
-    else if (gameInfo.wave > 20) {
+    else if (gameInfo.wave >= 20) {
         spritePng = "Sprites/UFO/UFO(5).png"
         walkFrames = walkFrames5;
         gameInfo.enemiesHp += 10;
         gameInfo.moneyPerKill += 10
     }
-    else if (gameInfo.wave > 25) {
+    else if (gameInfo.wave >= 25) {
         spritePng = "Sprites/UFO/UFO(6).png"
         walkFrames = walkFrames6;
         gameInfo.enemiesHp += 10;
         gameInfo.moneyPerKill += 10
     }
-    else if (gameInfo.wave > 30) {
+    else if (gameInfo.wave >= 30) {
         spritePng = "Sprites/UFO/UFO(7).png"
         walkFrames = walkFrames7;
         gameInfo.enemiesHp += 10;

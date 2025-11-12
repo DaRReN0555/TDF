@@ -5,6 +5,7 @@ import {spawnEnemies} from "./spawnEnemies.js";
 import {startEnemyMovement} from "./enemiesMoving.js";
 import {gameInfo} from "./constants.js";
 import {restartScreen} from "./restartGame.js";
+import { changeSkinAnim } from './changeTowerSkinAnim';
 
 export const app = new Application();
 await app.init({
@@ -21,6 +22,10 @@ startEnemyMovement()
 
 app.stage.sortableChildren = true;
 tower.zIndex = 1000;
+
+const towerSkin1 = await Assets.load('Sprites/Towers/Archer/archer_level_1.png');
+const towerSkin2 = await Assets.load('Sprites/Towers/Archer/archer_level_2.png');
+const towerSkin3 = await Assets.load('Sprites/Towers/Archer/archer_level_3.png');
 
 app.ticker.add(() => {
     if(!gameInfo.isGameEnded) {
@@ -319,6 +324,7 @@ startWaveProgress();
 const healthContainer = new Container();
 healthContainer.x = tower.x - 80;
 healthContainer.y = tower.y - 135;
+healthContainer.zIndex = 10000
 app.stage.addChild(healthContainer);
 
 const healthBg = new Graphics();
@@ -818,12 +824,36 @@ app.ticker.add(() => {
     }
 });
 
+let lastSkin = 1;
+
 app.ticker.add(() => {
-    if(gameInfo.hp <= 0 || gameInfo.isGameEnded) {
-        app.stage.children.forEach((child) => {
-            if (child.zIndex == 999 || child.zIndex == 1001) {
-                app.stage.removeChild(child)
-            }  
-        })
+  if (gameInfo.hp <= 0 || gameInfo.isGameEnded) {
+    app.stage.children.forEach((child) => {
+      if (child.zIndex == 999 || child.zIndex == 1001) {
+        app.stage.removeChild(child);
+      }
+    });
+  }
+
+  let currentSkin = 1;
+  if (gameInfo.wave >= 15 && gameInfo.wave < 30) currentSkin = 2;
+  if (gameInfo.wave >= 30) currentSkin = 3;
+
+  if (currentSkin !== lastSkin) {
+    lastSkin = currentSkin;
+
+    switch (currentSkin) {
+      case 1:
+        tower.texture = towerSkin1;
+        break;
+      case 2:
+        tower.texture = towerSkin2;
+        break;
+      case 3:
+        tower.texture = towerSkin3;
+        break;
     }
-})
+
+    changeSkinAnim(gameInfo);
+  }
+});

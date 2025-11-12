@@ -28,8 +28,8 @@ export async function createMap() {
     block.y = pos.y;
     
     gameInfo.blocks.push([block.x, block.y]);
+    gameInfo.blocksSprites.push(block)
    
-
     mapContainer.addChild(block);
 
     pos.x += stepX;
@@ -46,4 +46,3 @@ export async function createMap() {
     }
   }
 }
-

@@ -136,6 +136,7 @@ export function restartScreen(app: Application, spawnEnemies: () => void, startE
         gameInfo.shopHp = 20
         gameInfo.shopRange = 20
         gameInfo.shopMoneyWave = 20
+        gameInfo.enemies = [];
         clearEnemies(app)
         createTower()
         spawnEnemies()
@@ -171,5 +172,4 @@ function clearEnemies(app: Application) {
     for (const entity of app.stage.children) {
         if (entity instanceof Sprite || entity instanceof AnimatedSprite) app.stage.removeChild(entity);
     }
-    gameInfo.enemies = [];
 }

@@ -1,7 +1,8 @@
 import { Sprite } from 'pixi.js';
-export const gameInfo: {
-    skin: number,
+
+export interface GameInfo {
     blocks: Array<Array<number>>,
+    blocksSprites: Array<Sprite>,
     damage: number,
     money: number,
     moneyPerKill: number,
@@ -21,9 +22,11 @@ export const gameInfo: {
     shopRange: number,
     shopMoneyWave: number,
     isGameEnded: boolean
-} = {
-    skin: 1,
+}
+
+export const gameInfo: GameInfo = {
     blocks: [],
+    blocksSprites: [],
     damage: 5,
     money: 0,
     moneyPerKill: 5,
