@@ -1,5 +1,6 @@
 import { Sprite } from 'pixi.js';
 export const gameInfo: {
+    skin: number,
     blocks: Array<Array<number>>,
     damage: number,
     money: number,
@@ -21,6 +22,7 @@ export const gameInfo: {
     shopMoneyWave: number,
     isGameEnded: boolean
 } = {
+    skin: 1,
     blocks: [],
     damage: 5,
     money: 0,
@@ -28,7 +30,7 @@ export const gameInfo: {
     hp: 20,
     maxHp: 20,
     wave: 1,
-    enemiesHp: 50,
+    enemiesHp: 5,
     radiusX: 350,
     radiusY: 200,
     respawnDuration: 500,

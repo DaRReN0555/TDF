@@ -1,11 +1,11 @@
-import { Application, Graphics, Container, Text } from 'pixi.js';
+import { Application, Graphics, Container, Text, Sprite, AnimatedSprite } from 'pixi.js';
 import { gameInfo } from './constants.js';
 
 function easeInOutCubic(x: number): number {
     return x < 0.5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3)/2;
 }
 
-export function restartScreen(app: Application, spawnEnemies: () => void, startEnemyMovement: () => void) {
+export function restartScreen(app: Application, spawnEnemies: () => void, startEnemyMovement: () => void, createTower: () => Promise<Sprite>) {
     const restartContainer = new Container();
     restartContainer.x = 0;
     restartContainer.y = 0;
@@ -136,6 +136,8 @@ export function restartScreen(app: Application, spawnEnemies: () => void, startE
         gameInfo.shopHp = 20
         gameInfo.shopRange = 20
         gameInfo.shopMoneyWave = 20
+        clearEnemies(app)
+        createTower()
         spawnEnemies()
         startEnemyMovement()
 
@@ -163,4 +165,11 @@ export function restartScreen(app: Application, spawnEnemies: () => void, startE
         }
         app.ticker.add(update)
     }
+}
+
+function clearEnemies(app: Application) {
+    for (const entity of app.stage.children) {
+        if (entity instanceof Sprite || entity instanceof AnimatedSprite) app.stage.removeChild(entity);
+    }
+    gameInfo.enemies = [];
 }

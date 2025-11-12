@@ -6,7 +6,7 @@ import { tower } from "./main.js";
 const ENEMY_SPEED = 1.5;
 let k = 0
 
-let movementTicker: ((delta: Ticker) => void) | null = null;
+export let movementTicker: ((delta: Ticker) => void) | null = null;
 
 export function startEnemyMovement() {
     if (movementTicker) app.ticker.remove(movementTicker);

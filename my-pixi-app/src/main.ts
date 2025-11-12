@@ -774,7 +774,7 @@ app.ticker.add(() => {
         }
         if(gameInfo.hp <= 0) {
             gameInfo.isGameEnded = true
-            restartScreen(app, spawnEnemies, startEnemyMovement)
+            restartScreen(app, spawnEnemies, startEnemyMovement, createTower)
             gameInfo.hp = 0;
         }
         healthText.text = gameInfo.hp.toString();
@@ -819,11 +819,10 @@ app.ticker.add(() => {
 });
 
 app.ticker.add(() => {
-    if(gameInfo.hp <= 0) {
+    if(gameInfo.hp <= 0 || gameInfo.isGameEnded) {
         app.stage.children.forEach((child) => {
             if (child.zIndex == 999 || child.zIndex == 1001) {
                 app.stage.removeChild(child)
-                console.log(app.stage.children)
             }  
         })
     }
