@@ -1,13 +1,21 @@
 import { Ticker, Graphics } from "pixi.js";
 import { app } from "./main.js";
-import { gameInfo } from "./constants.js";
+import { gameInfo} from "./constants.js";
 import { tower } from "./main.js";
 
 const ENEMY_SPEED = 1.5;
 let k = 0
 
+let movementTicker: ((delta: Ticker) => void) | null = null;
+
 export function startEnemyMovement() {
-    app.ticker.add(updateEnemies);
+    if (movementTicker) app.ticker.remove(movementTicker);
+
+    movementTicker = (delta: Ticker) => {
+        if (!gameInfo.isGameEnded) updateEnemies(delta);
+    };
+
+    app.ticker.add(movementTicker);
 }
 
 function updateEnemies(deltaTime: Ticker): void {
@@ -53,7 +61,7 @@ function spawnParticles(x: number, y: number) {
 
     for (let i = 0; i < count; i++) {
         const p = new Graphics() as Particle;;
-        p.zIndex = tower.zIndex + 1;
+        p.zIndex = tower.zIndex + 2;
         const size = 15 + Math.random() * 3;
         p.beginFill("gray");
         p.drawRect(-size / 2, -size / 2, size, size);

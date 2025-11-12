@@ -1,4 +1,4 @@
-import {Assets, Sprite, Container } from 'pixi.js';
+import { Assets, Sprite, Container } from 'pixi.js';
 import { app } from './main.js';
 import { gameInfo } from './constants.js';
 

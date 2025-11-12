@@ -86,10 +86,10 @@ export async function spawnEnemies() {
         entity.anchor.set(0.5, 1);
         app.stage.addChild(entity);
 
-        const crushAnim = await crushingAnimation(entity.x, entity.y);
-        await sizeAnimation(entity);
-        if (crushAnim) app.stage.removeChild(crushAnim);
-        await crushingReverseAnimation(entity);
+            const crushAnim = await crushingAnimation(entity.x, entity.y);
+            await sizeAnimation(entity);
+            if (crushAnim) app.stage.removeChild(crushAnim);
+            await crushingReverseAnimation(entity);
 
         const walkAnim = new AnimatedSprite(walkFrames);
         walkAnim.x = entity.x;

@@ -4,6 +4,7 @@ import {createTower, bow} from "./createTower.js";
 import {spawnEnemies} from "./spawnEnemies.js";
 import {startEnemyMovement} from "./enemiesMoving.js";
 import {gameInfo} from "./constants.js";
+import {restartScreen} from "./restartGame.js";
 
 export const app = new Application();
 await app.init({
@@ -22,17 +23,20 @@ app.stage.sortableChildren = true;
 tower.zIndex = 1000;
 
 app.ticker.add(() => {
-    const towerBottom = tower.y + tower.height * (1 - tower.anchor.y);
+    if(!gameInfo.isGameEnded) {
+        const towerBottom = tower.y + tower.height * (1 - tower.anchor.y);
 
-    for (const enemy of gameInfo.enemies) {
-        const enemyBottom = enemy.y + enemy.height * (enemy.anchor.y);
+        for (const enemy of gameInfo.enemies) {
+            const enemyBottom = enemy.y + enemy.height * (enemy.anchor.y);
 
-        if (enemyBottom < towerBottom) {
-            enemy.zIndex = tower.zIndex - 1;
-        } else {
-            enemy.zIndex = tower.zIndex + 1;
+            if (enemyBottom < towerBottom) {
+                enemy.zIndex = tower.zIndex - 1;
+            } else {
+                enemy.zIndex = tower.zIndex + 1;
+            }
         }
     }
+    else return
 });
 
 const arrowTexture = await Assets.load('Sprites/Towers/Archer/arrow.png');
@@ -49,7 +53,8 @@ interface EnemyWithHp extends Sprite {
 }
 
 app.ticker.add((delta: Ticker) => {
-    towerAttack(delta.deltaMS)
+    if(!gameInfo.isGameEnded) towerAttack(delta.deltaMS)
+    else return
 });
 
 function easeInOutCubic(x: number): number {
@@ -131,7 +136,7 @@ function shootArrow(enemy: EnemyWithHp, damage: number) {
     
     arrowSprite.x = bow.x + tower.x;
     arrowSprite.y = bow.y + tower.y
-    arrowSprite.zIndex = tower.zIndex + 1;
+    arrowSprite.zIndex = tower.zIndex + 2;
     app.stage.addChild(arrowSprite);
 
     const moveArrow = (delta: Ticker) => {
@@ -666,15 +671,18 @@ function createUpgradeButton(x: number, cost: number): UpgradeButton {
         }
     });
     app.ticker.add(() => {
-        const targetScale = btnData.hovered ? 1.1 : 1.0;
-        button.scale.x += (targetScale - button.scale.x) * 0.2;
-        button.scale.y += (targetScale - button.scale.y) * 0.2;
-        buttonBg.scale.x += (targetScale - buttonBg.scale.x) * 0.2;
-        buttonBg.scale.y += (targetScale - buttonBg.scale.y) * 0.2;
-        coinIcon.x = -10 * button.scale.x;
-        coinIcon.y = 0 * button.scale.y;
-        coinShadow.x = coinIcon.x;
-        coinShadow.y = coinIcon.y - 12 * button.scale.y;
+        if(!gameInfo.isGameEnded) {
+            const targetScale = btnData.hovered ? 1.1 : 1.0;
+            button.scale.x += (targetScale - button.scale.x) * 0.2;
+            button.scale.y += (targetScale - button.scale.y) * 0.2;
+            buttonBg.scale.x += (targetScale - buttonBg.scale.x) * 0.2;
+            buttonBg.scale.y += (targetScale - buttonBg.scale.y) * 0.2;
+            coinIcon.x = -10 * button.scale.x;
+            coinIcon.y = 0 * button.scale.y;
+            coinShadow.x = coinIcon.x;
+            coinShadow.y = coinIcon.y - 12 * button.scale.y;
+        }
+        else return
     });
 
     return btnData;
@@ -687,28 +695,31 @@ const upgradeButtons: UpgradeButton[] = [
     createUpgradeButton(952, 10),
 ];
 upgradeButtons[0].upgradeFunc = () => { gameInfo.damage = Math.floor(gameInfo.damage * 1.3); };
-upgradeButtons[1].upgradeFunc = () => { gameInfo.shopHp = Math.floor(gameInfo.hp * 1.3); gameInfo.hp = gameInfo.shopHp; };
+upgradeButtons[1].upgradeFunc = () => { gameInfo.shopHp = Math.floor(gameInfo.maxHp * 1.3); gameInfo.maxHp = gameInfo.shopHp; gameInfo.hp = gameInfo.shopHp; };
 upgradeButtons[2].upgradeFunc = () => { gameInfo.radiusX += 10; gameInfo.radiusY += 10; gameInfo.shopRange += 1; };
 upgradeButtons[3].upgradeFunc = () => { gameInfo.shopMoneyWave += 20; };
 
 app.ticker.add(() => {
-    for (const btn of upgradeButtons) {
-        if (gameInfo.money >= btn.cost) {
-            btn.button.tint = 0x00ff00;
-            btn.buttonBg.tint = 0x00ff00;
-        } else {
-            btn.button.tint = 0xff0000;
-            btn.buttonBg.tint = 0xff0000;
+    if(!gameInfo.isGameEnded) {
+        for (const btn of upgradeButtons) {
+            if (gameInfo.money >= btn.cost) {
+                btn.button.tint = 0x00ff00;
+                btn.buttonBg.tint = 0x00ff00;
+            } else {
+                btn.button.tint = 0xff0000;
+                btn.buttonBg.tint = 0xff0000;
+            }
+
+            btn.buttonText.text = btn.cost.toString();
+
+            const targetScale = btn.hovered ? 1.1 : 1.0;
+            btn.button.scale.x += (targetScale - btn.button.scale.x) * 0.2;
+            btn.button.scale.y += (targetScale - btn.button.scale.y) * 0.2;
+            btn.buttonBg.scale.x += (targetScale - btn.buttonBg.scale.x) * 0.2;
+            btn.buttonBg.scale.y += (targetScale - btn.buttonBg.scale.y) * 0.2;
         }
-
-        btn.buttonText.text = btn.cost.toString();
-
-        const targetScale = btn.hovered ? 1.1 : 1.0;
-        btn.button.scale.x += (targetScale - btn.button.scale.x) * 0.2;
-        btn.button.scale.y += (targetScale - btn.button.scale.y) * 0.2;
-        btn.buttonBg.scale.x += (targetScale - btn.buttonBg.scale.x) * 0.2;
-        btn.buttonBg.scale.y += (targetScale - btn.buttonBg.scale.y) * 0.2;
     }
+    else return
 });
 
 
@@ -724,81 +735,96 @@ let shopAnimDuration = 600;
 let shopAnimating = false;
 
 app.ticker.add(() => {
-    const mousePos = app.renderer.events.pointer.global;
-    const isHovered =
-        mousePos.x > tower.x - 640 &&
-        mousePos.x < tower.x + 640 &&
-        mousePos.y > window.innerHeight - 300;
+    if(!gameInfo.isGameEnded) {
+        const mousePos = app.renderer.events.pointer.global;
+        const isHovered =
+            mousePos.x > tower.x - 640 &&
+            mousePos.x < tower.x + 640 &&
+            mousePos.y > window.innerHeight - 300;
 
-    const newTargetY = isHovered ? shopVisibleY : shopHiddenY;
-    if (newTargetY !== shopTargetY) {
-        shopStartY = shopMenu.y;
-        shopTargetY = newTargetY;
-        shopAnimStart = performance.now();
-        shopAnimating = true;
-    }
+        const newTargetY = isHovered ? shopVisibleY : shopHiddenY;
+        if (newTargetY !== shopTargetY) {
+            shopStartY = shopMenu.y;
+            shopTargetY = newTargetY;
+            shopAnimStart = performance.now();
+            shopAnimating = true;
+        }
 
-    if (shopAnimating) {
-        const elapsed = performance.now() - shopAnimStart;
-        let t = Math.min(elapsed / shopAnimDuration, 1);
-        t = easeInOutCubic(t);
+        if (shopAnimating) {
+            const elapsed = performance.now() - shopAnimStart;
+            let t = Math.min(elapsed / shopAnimDuration, 1);
+            t = easeInOutCubic(t);
 
-        shopMenu.y = shopStartY + (shopTargetY - shopStartY) * t;
+            shopMenu.y = shopStartY + (shopTargetY - shopStartY) * t;
 
-        if (t >= 1) {
-            shopAnimating = false;
+            if (t >= 1) {
+                shopAnimating = false;
+            }
+        }
+
+        hpText2.text = gameInfo.shopHp.toString();
+        damageText2.text = gameInfo.damage.toString();
+        rangeText2.text = gameInfo.shopRange.toString();
+        moneyWaveText2.text = gameInfo.shopMoneyWave.toString();
+        coinText.text = Math.floor(gameInfo.money).toString();
+        if(gameInfo.money >= 1000) {
+            let num = gameInfo.money / 1000
+            let rounded = Number(num.toFixed(1))
+            coinText.text = `${rounded}K`;
+        }
+        if(gameInfo.hp <= 0) {
+            gameInfo.isGameEnded = true
+            restartScreen(app, spawnEnemies, startEnemyMovement)
+            gameInfo.hp = 0;
+        }
+        healthText.text = gameInfo.hp.toString();
+        text2.text = gameInfo.wave.toString();
+
+
+        const killed = gameInfo.enemiesKilled;
+        const total = totalEnemies || 1;
+        const newTarget = Math.min(killed / total, 1);
+
+        if (newTarget !== targetProgress) {
+            previousProgress = displayedProgress;
+            targetProgress = newTarget;
+            animStart = performance.now();
+            animating = true;
+        }
+
+        if (animating) {
+            const elapsed = performance.now() - animStart;
+            let t = Math.min(elapsed / animDuration, 1);
+            t = easeInOutCubic(t);
+            displayedProgress = previousProgress + (targetProgress - previousProgress) * t;
+
+            if (t >= 1) animating = false;
+        }
+
+        mask.scale.x = displayedProgress;
+
+        if (targetProgress >= 1 && !animating) {
+            gameInfo.enemiesHp += 2;
+            gameInfo.wave++;
+            gameInfo.enemiesKilled = 0;
+            gameInfo.enemies = [];
+            gameInfo.enemiesOnWave += 2;
+            gameInfo.respawnDuration = Math.max(200, gameInfo.respawnDuration - 20);
+            gameInfo.money += gameInfo.shopMoneyWave;
+
+            spawnEnemies();
+            startWaveProgress();
         }
     }
-
-    hpText2.text = gameInfo.shopHp.toString();
-    damageText2.text = gameInfo.damage.toString();
-    rangeText2.text = gameInfo.shopRange.toString();
-    moneyWaveText2.text = gameInfo.shopMoneyWave.toString();
-    coinText.text = Math.floor(gameInfo.money).toString();
-    if(gameInfo.money >= 1000) {
-        let num = gameInfo.money / 1000
-        let rounded = Number(num.toFixed(1))
-        coinText.text = `${rounded}K`;
-    }
-    if(gameInfo.hp <= 0) {
-        gameInfo.hp = 0;
-    }
-    healthText.text = gameInfo.hp.toString();
-    text2.text = gameInfo.wave.toString();
-    
-
-    const killed = gameInfo.enemiesKilled;
-    const total = totalEnemies || 1;
-    const newTarget = Math.min(killed / total, 1);
-
-    if (newTarget !== targetProgress) {
-        previousProgress = displayedProgress;
-        targetProgress = newTarget;
-        animStart = performance.now();
-        animating = true;
-    }
-
-    if (animating) {
-        const elapsed = performance.now() - animStart;
-        let t = Math.min(elapsed / animDuration, 1);
-        t = easeInOutCubic(t);
-        displayedProgress = previousProgress + (targetProgress - previousProgress) * t;
-
-        if (t >= 1) animating = false;
-    }
-
-    mask.scale.x = displayedProgress;
-
-    if (targetProgress >= 1 && !animating) {
-        gameInfo.enemiesHp += 2;
-        gameInfo.wave++;
-        gameInfo.enemiesKilled = 0;
-        gameInfo.enemies = [];
-        gameInfo.enemiesOnWave += 2;
-        gameInfo.respawnDuration = Math.max(200, gameInfo.respawnDuration - 20);
-        gameInfo.money += gameInfo.shopMoneyWave;
-
-        spawnEnemies();
-        startWaveProgress();
-    }
 });
+
+app.ticker.add(() => {
+    if(gameInfo.hp <= 0) {
+        app.stage.children.forEach((child) => {
+            if (child.zIndex == 999 || child.zIndex == 1001) {
+                app.stage.removeChild(child)
+                console.log(app.stage.children)
+            }  
+        })
+    }
+})
