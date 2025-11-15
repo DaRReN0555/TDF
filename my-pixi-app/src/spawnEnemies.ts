@@ -76,8 +76,6 @@ export async function spawnEnemies() {
         gameInfo.moneyPerKill += 10
     }
 
-    const SPAWN_INTERVAL = 600;
-
     for (let k = 0; k < gameInfo.enemiesOnWave; k++) {
         const sprite = await Assets.load(spritePng);
         const entity = new Sprite(sprite);
@@ -102,14 +100,15 @@ export async function spawnEnemies() {
         walkAnim.loop = true;
         walkAnim.play();
 
-        const index = app.stage.getChildIndex(entity);
+        let index = app.stage.children.indexOf(entity);
+        if (index === -1) index = app.stage.children.length;
         app.stage.removeChild(entity);
         app.stage.addChildAt(walkAnim, index);
 
         gameInfo.enemies.push(walkAnim);
         gameInfo.enemiesLeft += 1;
 
-        await new Promise(res => setTimeout(res, SPAWN_INTERVAL));
+        await new Promise(res => setTimeout(res, gameInfo.SPAWN_INTERVAL));
     }
 }
 
@@ -133,21 +132,21 @@ function pickSpawnPos(entity: Sprite) {
 
 async function crushingAnimation(x: number, y: number): Promise<Sprite> {
     return new Promise(resolve => {
-        const firstTexture = crushingFrame
-        const sprite = new Sprite(firstTexture);
+        const sprite = new Sprite(crushingFrame);
         sprite.x = x;
         sprite.y = y;
         sprite.anchor.set(0.5);
         sprite.scale.set(1);
         app.stage.addChild(sprite);
 
+        const duration = gameInfo.respawnDuration / gameInfo.spawnSpeed;
         const startTime = performance.now();
         const startScale = 0.01;
         const endScale = 1;
 
         const tickerCallback = () => {
             const elapsed = performance.now() - startTime;
-            let t = Math.min(elapsed / gameInfo.respawnDuration, 1);
+            let t = Math.min(elapsed / duration, 1);
             t = easeInOutCubic(t);
 
             sprite.scale.set(startScale + (endScale - startScale) * t);
@@ -162,20 +161,27 @@ async function crushingAnimation(x: number, y: number): Promise<Sprite> {
     });
 }
 
+
 async function sizeAnimation(entity: Sprite): Promise<void> {
     return new Promise(resolve => {
         const anim = new AnimatedSprite(spawnFrames);
-        anim.x = entity.x; anim.y = entity.y; anim.anchor.set(0.5, 1);
-        anim.width = enemySize.x; anim.height = enemySize.y; anim.loop = false;
+        anim.x = entity.x; 
+        anim.y = entity.y; 
+        anim.anchor.set(0.5, 1);
+        anim.width = enemySize.x; 
+        anim.height = enemySize.y; 
+        anim.loop = false;
         app.stage.addChild(anim);
 
+        const duration = gameInfo.respawnDuration / gameInfo.spawnSpeed;
         const totalFrames = anim.totalFrames;
         const startTime = performance.now();
 
         const tickerCallback = () => {
             const elapsed = performance.now() - startTime;
-            let t = Math.min(elapsed / gameInfo.respawnDuration, 1);
+            let t = Math.min(elapsed / duration, 1);
             t = easeInOutCubic(t);
+
             anim.gotoAndStop(Math.floor(t * (totalFrames - 1)));
 
             if (t >= 1) {
@@ -191,23 +197,27 @@ async function sizeAnimation(entity: Sprite): Promise<void> {
     });
 }
 
+
 async function crushingReverseAnimation(entity: Sprite): Promise<void> {
     return new Promise(resolve => {
-        const firstTexture = crushingFrame
-        const anim = new Sprite(firstTexture);
+        const anim = new Sprite(crushingFrame);
         anim.x = entity.x;
         anim.y = entity.y;
         anim.anchor.set(0.5);
         anim.scale.set(2);
-        app.stage.addChildAt(anim, app.stage.getChildIndex(entity));
 
+        let index = app.stage.children.indexOf(entity);
+        if (index === -1) index = app.stage.children.length;
+        app.stage.addChildAt(anim, index);
+
+        const duration = gameInfo.respawnDuration / gameInfo.spawnSpeed;
         const startTime = performance.now();
         const startScale = 1;
         const endScale = 0.01;
 
         const tickerCallback = () => {
             const elapsed = performance.now() - startTime;
-            let t = Math.min(elapsed / gameInfo.respawnDuration, 1);
+            let t = Math.min(elapsed / duration, 1);
             t = easeInOutCubic(t);
 
             anim.scale.set(startScale + (endScale - startScale) * t);
@@ -222,6 +232,7 @@ async function crushingReverseAnimation(entity: Sprite): Promise<void> {
         app.ticker.add(tickerCallback);
     });
 }
+
 
 function easeInOutCubic(x: number): number {
     return x < 0.5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3)/2;

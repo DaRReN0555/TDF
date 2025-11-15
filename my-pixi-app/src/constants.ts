@@ -1,6 +1,7 @@
 import { Sprite } from 'pixi.js';
 
 export interface GameInfo {
+
     blocks: Array<Array<number>>,
     blocksSprites: Array<Sprite>,
     damage: number,
@@ -21,7 +22,11 @@ export interface GameInfo {
     shopHp: number,
     shopRange: number,
     shopMoneyWave: number,
-    isGameEnded: boolean
+    spawnSpeed: number,
+    isGameEnded: boolean,
+    SPAWN_INTERVAL: number,
+    ENEMY_SPEED: number,
+    TOWER_FIRE_RATE: number
 }
 
 export const gameInfo: GameInfo = {
@@ -45,7 +50,11 @@ export const gameInfo: GameInfo = {
     shopHp: 20,
     shopRange: 20,
     shopMoneyWave: 20,
-    isGameEnded: false
+    spawnSpeed: 1, 
+    isGameEnded: false,
+    SPAWN_INTERVAL: 500,
+    ENEMY_SPEED: 1.5,
+    TOWER_FIRE_RATE: 250
 }
 
 export const enemySize = {

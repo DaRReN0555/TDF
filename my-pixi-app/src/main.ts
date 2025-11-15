@@ -1,4 +1,4 @@
-import { Application, Assets, Sprite, Graphics, Ticker, Container, TextStyle, Text } from 'pixi.js';
+import { Application, Assets, Sprite, Graphics, Ticker, Container, TextStyle, Text, Point } from 'pixi.js';
 import {createMap} from "./createMap.js";
 import {createTower, bow} from "./createTower.js";
 import {spawnEnemies} from "./spawnEnemies.js";
@@ -49,8 +49,7 @@ const heart = await Assets.load('Sprites/heart.png')
 const coin = await Assets.load('Sprites/coin.png')
 
 let towerCooldown = 0;
-const TOWER_FIRE_RATE = 500;
-const ARROW_SPEED = 5;
+let ARROW_SPEED = 10;
 
 interface EnemyWithHp extends Sprite {
     hp: number;
@@ -85,11 +84,11 @@ export function towerAttack(deltaMS: number) {
     if (target.hp === undefined) target.hp = gameInfo.enemiesHp;
     target.isTargeted = true;
 
-    shootArrow(target, gameInfo.damage);
-    towerCooldown = TOWER_FIRE_RATE;
+    shootArrow(target, gameInfo.damage, ARROW_SPEED);
+    towerCooldown = gameInfo.TOWER_FIRE_RATE;
 }
 
-function shootArrow(enemy: EnemyWithHp, damage: number) {
+function shootArrow(enemy: EnemyWithHp, damage: number, arrowSpeed: number) {
     if (!enemy.parent) return;
     if (bow) {
         const towerCenterX = tower.x + tower.width / 2;
@@ -176,8 +175,8 @@ function shootArrow(enemy: EnemyWithHp, damage: number) {
             return;
         }
 
-        arrowSprite.x += (dx / dist) * ARROW_SPEED * delta.deltaTime;
-        arrowSprite.y += (dy / dist) * ARROW_SPEED * delta.deltaTime;
+        arrowSprite.x += (dx / dist) * arrowSpeed * delta.deltaTime;
+        arrowSprite.y += (dy / dist) * arrowSpeed * delta.deltaTime;
         arrowSprite.rotation = Math.atan2(dy, dx) + Math.PI / 2;
 
         if (
@@ -688,6 +687,7 @@ function createUpgradeButton(x: number, cost: number): UpgradeButton {
             coinShadow.x = coinIcon.x;
             coinShadow.y = coinIcon.y - 12 * button.scale.y;
         }
+        if (gameInfo.isGameEnded) btnData.cost = 10
         else return
     });
 
@@ -704,6 +704,128 @@ upgradeButtons[0].upgradeFunc = () => { gameInfo.damage = Math.floor(gameInfo.da
 upgradeButtons[1].upgradeFunc = () => { gameInfo.shopHp = Math.floor(gameInfo.maxHp * 1.3); gameInfo.maxHp = gameInfo.shopHp; gameInfo.hp = gameInfo.shopHp; };
 upgradeButtons[2].upgradeFunc = () => { gameInfo.radiusX += 10; gameInfo.radiusY += 10; gameInfo.shopRange += 1; };
 upgradeButtons[3].upgradeFunc = () => { gameInfo.shopMoneyWave += 20; };
+
+const changeGameSpeedContainer = new Container();
+changeGameSpeedContainer.x = 50;
+changeGameSpeedContainer.y = 50;
+app.stage.addChild(changeGameSpeedContainer);
+const changeGameSpeedButton = new Graphics();
+changeGameSpeedButton.interactive = true;
+changeGameSpeedButton.beginFill("#6b6a6aff");
+changeGameSpeedButton.drawRoundedRect(0, 0, 100, 40, 15);
+changeGameSpeedButton.endFill();
+changeGameSpeedButton.alpha = 1;
+changeGameSpeedButton.x = 0;
+changeGameSpeedButton.y = 0;
+changeGameSpeedContainer.addChild(changeGameSpeedButton);
+
+const changeGameSpeedButtonBg = new Graphics();
+changeGameSpeedButtonBg.beginFill("#504f4fff");
+changeGameSpeedButtonBg.drawRoundedRect(-5, -5, 110, 50, 20);
+changeGameSpeedButtonBg.endFill();
+changeGameSpeedButtonBg.alpha = 0.5;
+changeGameSpeedButtonBg.x = 0;
+changeGameSpeedButtonBg.y = 0;
+changeGameSpeedContainer.addChild(changeGameSpeedButtonBg);
+
+const changeGameSpeedSign = new Graphics();
+changeGameSpeedSign.beginFill("#ffffffff");
+changeGameSpeedSign.drawRoundedRect(7.5, 7.5, 25, 25, 30);
+changeGameSpeedSign.endFill();
+changeGameSpeedSign.alpha = 1;
+changeGameSpeedSign.x = 0;
+changeGameSpeedSign.y = 0;
+changeGameSpeedContainer.addChild(changeGameSpeedSign);
+
+const changeGameSpeedSignBg = new Graphics();
+changeGameSpeedSignBg.beginFill("#ffffffff");
+changeGameSpeedSignBg.drawRoundedRect(5, 5, 30, 30, 30);
+changeGameSpeedSignBg.endFill();
+changeGameSpeedSignBg.alpha = 0.5;
+changeGameSpeedSignBg.x = 0;
+changeGameSpeedSignBg.y = 0;
+changeGameSpeedContainer.addChild(changeGameSpeedSignBg);
+
+export let isButtonClicked = false
+let startX = 0
+let targetX = 0
+
+changeGameSpeedButton.on('pointerdown', () => {
+    isButtonClicked = !isButtonClicked;
+
+    if (isButtonClicked) {
+        gameInfo.respawnDuration = 250;
+        gameInfo.spawnSpeed = 2;
+        gameInfo.SPAWN_INTERVAL = 100;
+        gameInfo.ENEMY_SPEED = 2.5;
+        gameInfo.TOWER_FIRE_RATE = 250;
+    } else {
+        gameInfo.respawnDuration = 500;
+        gameInfo.spawnSpeed = 1;
+        gameInfo.SPAWN_INTERVAL = 500;
+        gameInfo.ENEMY_SPEED = 1.5;
+        gameInfo.TOWER_FIRE_RATE = 500;
+    }
+
+    changeGameSpeedButton.clear();
+    changeGameSpeedButton.beginFill(isButtonClicked ? "#4be653ff" : "#6b6a6aff");
+    changeGameSpeedButton.drawRoundedRect(0, 0, 100, 40, 15);
+    changeGameSpeedButton.endFill();
+
+    startX = changeGameSpeedSign.x;
+    targetX = isButtonClicked ? 60 : 0;
+
+    let startTime = performance.now();
+    let duration = 200;
+
+    function update() {
+        let elapsed = performance.now() - startTime;
+        let t = elapsed / duration;
+        if (t > 1) t = 1;
+        let eased = easeInOutCubic(t);
+        let x = startX + (targetX - startX) * eased;
+        changeGameSpeedSign.x = x;
+        changeGameSpeedSignBg.x = x;
+        if (t === 1) {
+            app.ticker.remove(update);
+        }
+    }
+    app.ticker.add(update);
+});
+
+
+const triangle = new Graphics();
+triangle.beginFill("#ffffffff");
+triangle.drawPolygon([
+    new Point(changeGameSpeedContainer.x + 15, changeGameSpeedContainer.y + 10),
+    new Point(changeGameSpeedContainer.x + 25, changeGameSpeedContainer.y + 20),
+    new Point(changeGameSpeedContainer.x + 15, changeGameSpeedContainer.y + 30)
+]);
+triangle.endFill();
+triangle.alpha = 0.5;
+app.stage.addChild(triangle);
+
+const triangle2 = new Graphics();
+triangle2.beginFill("#ffffffff");
+triangle2.drawPolygon([
+    new Point(changeGameSpeedContainer.x + 78, changeGameSpeedContainer.y + 10),
+    new Point(changeGameSpeedContainer.x + 88, changeGameSpeedContainer.y + 20),
+    new Point(changeGameSpeedContainer.x + 78, changeGameSpeedContainer.y + 30)
+]);
+triangle2.endFill();
+triangle2.alpha = 0.5;
+app.stage.addChild(triangle2);
+
+const triangle3 = new Graphics();
+triangle3.beginFill("#ffffffff");
+triangle3.drawPolygon([
+    new Point(changeGameSpeedContainer.x + 70, changeGameSpeedContainer.y + 10),
+    new Point(changeGameSpeedContainer.x + 80, changeGameSpeedContainer.y + 20),
+    new Point(changeGameSpeedContainer.x + 70, changeGameSpeedContainer.y + 30)
+]);
+triangle3.endFill();
+triangle3.alpha = 0.5;
+app.stage.addChild(triangle3);
 
 app.ticker.add(() => {
     if(!gameInfo.isGameEnded) {

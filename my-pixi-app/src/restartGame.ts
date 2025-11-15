@@ -1,5 +1,6 @@
 import { Application, Graphics, Container, Text, Sprite, AnimatedSprite } from 'pixi.js';
 import { gameInfo } from './constants.js';
+import { isButtonClicked } from './main.js';
 
 function easeInOutCubic(x: number): number {
     return x < 0.5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3)/2;
@@ -127,7 +128,6 @@ export function restartScreen(app: Application, spawnEnemies: () => void, startE
         gameInfo.enemiesHp = 5
         gameInfo.radiusX = 350
         gameInfo.radiusY = 200
-        gameInfo.respawnDuration = 500
         gameInfo.enemiesLeft = 0
         gameInfo.enemiesKilled = 0
         gameInfo.enemiesOnWave = 4

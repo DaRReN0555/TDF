@@ -3,7 +3,6 @@ import { app } from "./main.js";
 import { gameInfo} from "./constants.js";
 import { tower } from "./main.js";
 
-const ENEMY_SPEED = 1.5;
 let k = 0
 
 export let movementTicker: ((delta: Ticker) => void) | null = null;
@@ -43,8 +42,8 @@ function updateEnemies(deltaTime: Ticker): void {
         dx /= dist;
         dy /= dist;
 
-        enemy.x += dx * ENEMY_SPEED * delta;
-        enemy.y += dy * ENEMY_SPEED * delta;
+        enemy.x += dx * gameInfo.ENEMY_SPEED * delta;
+        enemy.y += dy * gameInfo.ENEMY_SPEED * delta;
 
 
     }

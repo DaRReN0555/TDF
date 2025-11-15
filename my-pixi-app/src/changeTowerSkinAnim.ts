@@ -25,7 +25,7 @@ export function changeSkinAnim(gameInfo: GameInfo) {
   distances.sort((a, b) => a.dist - b.dist);
 
   const rings: number[][] = [];
-  const threshold = 130;
+  const threshold = 100;
   let currentRing: number[] = [];
   let currentDist = distances[0].dist;
 
