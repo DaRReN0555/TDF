@@ -1,13 +1,8 @@
-import { Assets, Sprite, AnimatedSprite, Texture } from 'pixi.js';
+import { Assets, Sprite, AnimatedSprite, Texture, Graphics } from 'pixi.js';
 import { gameInfo, enemySize } from './constants';
 import { app, tower } from './main.js';
-import { createTower } from './createTower.js';
 
 const crushingFrame = await Assets.load(`Sprites/Animations/Ellipse 5.png`)
-
-const spawnFrames: Texture[] = await Promise.all(
-  [1,2,3,4,5,6,7,8,9,10,11].map(i => Assets.load(`Sprites/Animations/UFO(1)${i}.png`))
-);
 
 const walkFrames1: Texture[] = await Promise.all(
   [1,2,3,4,5,6,5,4,3,2,1].map(i => Assets.load(`Sprites/Animations/UFO(1)Walk${i}.png`))
@@ -31,84 +26,117 @@ const walkFrames7: Texture[] = await Promise.all(
   [1,2,3,4,5,6,5,4,3,2,1].map(i => Assets.load(`Sprites/Animations/UFO(7)Walk${i}.png`))
 );
 
+export const batFly: Texture[] = await Promise.all(
+  [1,2,3,4].map(i => Assets.load(`Sprites/Bat/fly${i}.png`))
+)
+const batDeath: Texture[] = await Promise.all(
+  [1,2,3,4,5,6,7,8,9].map(i => Assets.load(`Sprites/Bat/death${i}.png`))
+)
+
+export const golemWalkFrames: Texture[] = await Promise.all(
+  [1,2,3,4,5,6,7,8,9,10].map(i => Assets.load(`Sprites/Golem/Golem_walk${i}.png`))
+);
+export const golemAttackFrames: Texture[] = await Promise.all(
+  [1,2,3,4,5,6,7,8,9,10,11].map(i => Assets.load(`Sprites/Golem/Golem_attack${i}.png`))
+);
+const golemDieFrames: Texture[] = await Promise.all(
+  [1,2,3,4,5,6,7,8,9,10,11,12].map(i => Assets.load(`Sprites/Golem/Golem_die${i}.png`))
+);
+
 let walkFrames: Texture[]
 
 export async function spawnEnemies() {
-    let spritePng = "Sprites/UFO/UFO(1).png";
     if (gameInfo.wave <= 5) {
-        spritePng = "Sprites/UFO/UFO(1).png"
         walkFrames = walkFrames1;
     }
     else if (gameInfo.wave >= 5) {
-        spritePng = "Sprites/UFO/UFO(2).png"
         walkFrames = walkFrames2;
         gameInfo.enemiesHp += 10;
         gameInfo.moneyPerKill += 10
     }
     else if (gameInfo.wave >= 10) {
-        spritePng = "Sprites/UFO/UFO(3).png"
         walkFrames = walkFrames3;
         gameInfo.enemiesHp += 10;
         gameInfo.moneyPerKill += 10
     }
     else if (gameInfo.wave >= 15) {
-        spritePng = "Sprites/UFO/UFO(4).png"
         walkFrames = walkFrames4;
         gameInfo.enemiesHp += 10;
         gameInfo.moneyPerKill += 10
     }
     else if (gameInfo.wave >= 20) {
-        spritePng = "Sprites/UFO/UFO(5).png"
         walkFrames = walkFrames5;
         gameInfo.enemiesHp += 10;
         gameInfo.moneyPerKill += 10
     }
     else if (gameInfo.wave >= 25) {
-        spritePng = "Sprites/UFO/UFO(6).png"
         walkFrames = walkFrames6;
         gameInfo.enemiesHp += 10;
         gameInfo.moneyPerKill += 10
     }
     else if (gameInfo.wave >= 30) {
-        spritePng = "Sprites/UFO/UFO(7).png"
         walkFrames = walkFrames7;
         gameInfo.enemiesHp += 10;
         gameInfo.moneyPerKill += 10
     }
 
-    for (let k = 0; k < gameInfo.enemiesOnWave; k++) {
-        const sprite = await Assets.load(spritePng);
-        const entity = new Sprite(sprite);
+    if (gameInfo.wave % 5 !== 0) {
+      gameInfo.enemiesOnWave = gameInfo.wave * 2 + 2;
+      gameInfo.enemiesHp = gameInfo.wave * 2 + 5;
+        for (let k = 0; k < gameInfo.enemiesOnWave; k++) {
+            const batChance = 0.25;
+            if (Math.random() < batChance) {
+                await spawnBat();
+                await new Promise(res => setTimeout(res, gameInfo.SPAWN_INTERVAL));
+                continue;
+            }
+            let random = Math.floor(Math.random() * 7) + 1;
+            switch (random) {
+                case 1: walkFrames = walkFrames1; break;
+                case 2: walkFrames = walkFrames2; break;
+                case 3: walkFrames = walkFrames3; break;
+                case 4: walkFrames = walkFrames4; break;
+                case 5: walkFrames = walkFrames5; break;
+                case 6: walkFrames = walkFrames6; break;
+                case 7: walkFrames = walkFrames7; break;
+            }
+            const sprite = await Assets.load(`Sprites/UFO/UFO(${random}).png`);
+            const entity = new Sprite(sprite);
 
-        pickSpawnPos(entity);
-        entity.setSize(0, 0);
-        entity.anchor.set(0.5, 1);
-        app.stage.addChild(entity);
+            pickSpawnPos(entity);
+            entity.setSize(0, 0);
+            entity.anchor.set(0.5, 1);
+            app.stage.addChild(entity);
 
             const crushAnim = await crushingAnimation(entity.x, entity.y);
             await sizeAnimation(entity);
             if (crushAnim) app.stage.removeChild(crushAnim);
             await crushingReverseAnimation(entity);
 
-        const walkAnim = new AnimatedSprite(walkFrames);
-        walkAnim.x = entity.x;
-        walkAnim.y = entity.y;
-        walkAnim.anchor.set(0.5, 1);
-        walkAnim.width = enemySize.x;
-        walkAnim.height = enemySize.y;
-        walkAnim.animationSpeed = 0.5;
-        walkAnim.loop = true;
-        walkAnim.play();
+            const walkAnim = new AnimatedSprite(walkFrames);
+            walkAnim.x = entity.x;
+            walkAnim.y = entity.y;
+            walkAnim.anchor.set(0.5, 1);
+            walkAnim.width = enemySize.x;
+            walkAnim.height = enemySize.y;
+            walkAnim.animationSpeed = 0.5;
+            walkAnim.loop = true;
+            walkAnim.play();
 
-        let index = app.stage.children.indexOf(entity);
-        if (index === -1) index = app.stage.children.length;
-        app.stage.removeChild(entity);
-        app.stage.addChildAt(walkAnim, index);
+            let index = app.stage.children.indexOf(entity);
+            if (index === -1) index = app.stage.children.length;
+            app.stage.removeChild(entity);
+            app.stage.addChildAt(walkAnim, index);
 
-        gameInfo.enemies.push(walkAnim);
-        gameInfo.enemiesLeft += 1;
+            gameInfo.enemies.push(walkAnim);
+            gameInfo.enemiesLeft += 1;
 
-        await new Promise(res => setTimeout(res, gameInfo.SPAWN_INTERVAL));
+            await new Promise(res => setTimeout(res, gameInfo.SPAWN_INTERVAL));
+        }
+    } else {
+        gameInfo.enemiesOnWave = 1
+        gameInfo.enemiesHp += 100
+        await spawnGolem();
     }
 }
 
@@ -163,38 +191,49 @@ async function crushingAnimation(x: number, y: number): Promise<Sprite> {
 
 
 async function sizeAnimation(entity: Sprite): Promise<void> {
-    return new Promise(resolve => {
-        const anim = new AnimatedSprite(spawnFrames);
-        anim.x = entity.x; 
-        anim.y = entity.y; 
-        anim.anchor.set(0.5, 1);
-        anim.width = enemySize.x; 
-        anim.height = enemySize.y; 
-        anim.loop = false;
-        app.stage.addChild(anim);
+  return new Promise(resolve => {
+    const mask = new Graphics();
+    mask.beginFill(0xffffff);
+    mask.drawRect(
+      -enemySize.x / 2,
+      -enemySize.y,
+      enemySize.x,
+      enemySize.y
+    );
+    mask.endFill();
+    mask.x = entity.x;
+    mask.y = entity.y;
+    app.stage.addChild(mask);
 
-        const duration = gameInfo.respawnDuration / gameInfo.spawnSpeed;
-        const totalFrames = anim.totalFrames;
-        const startTime = performance.now();
+    entity.anchor.set(0.5, 1);
+    entity.zIndex = 1
+    entity.width  = enemySize.x;
+    entity.height = enemySize.y;
+    entity.mask = mask;
 
-        const tickerCallback = () => {
-            const elapsed = performance.now() - startTime;
-            let t = Math.min(elapsed / duration, 1);
-            t = easeInOutCubic(t);
+    const startY = entity.y + enemySize.y;
+    const endY   = entity.y;
+    entity.y = startY;
 
-            anim.gotoAndStop(Math.floor(t * (totalFrames - 1)));
+    const duration = gameInfo.respawnDuration / gameInfo.spawnSpeed;
+    const startTime = performance.now();
 
-            if (t >= 1) {
-                app.ticker.remove(tickerCallback);
-                app.stage.removeChild(anim);
-                entity.width = enemySize.x;
-                entity.height = enemySize.y;
-                resolve();
-            }
-        };
+    const tick = () => {
+      const elapsed = performance.now() - startTime;
+      let t = Math.min(elapsed / duration, 1);
+      t = easeInOutCubic(t);
 
-        app.ticker.add(tickerCallback);
-    });
+      entity.y = startY + (endY - startY) * t;
+
+      if (t >= 1) {
+        app.ticker.remove(tick);
+        entity.mask = null;
+        app.stage.removeChild(mask);
+        resolve();
+      }
+    };
+    app.ticker.add(tick);
+  });
 }
 
 
@@ -233,7 +272,154 @@ async function crushingReverseAnimation(entity: Sprite): Promise<void> {
     });
 }
 
+async function spawnBat() {
+    const bat = new AnimatedSprite(batFly);
+    bat.anchor.set(0.5, 1);
+    bat.animationSpeed = 0.25;
+    bat.loop = true;
+    bat.play();
+
+    bat.width = enemySize.x * 4;
+    bat.height = enemySize.y * 3;
+
+    const positions = [ 
+        {x: gameInfo.blocks[3][0] + 110, y: gameInfo.blocks[3][1] + 50},
+        {x: gameInfo.blocks[6][0] + 110, y: gameInfo.blocks[6][1] + 50},
+        {x: gameInfo.blocks[21][0] + 110, y: gameInfo.blocks[21][1] + 50}, 
+        {x: gameInfo.blocks[27][0] + 110, y: gameInfo.blocks[27][1] + 50},
+        {x: gameInfo.blocks[42][0] + 110, y: gameInfo.blocks[42][1] + 50},
+        {x: gameInfo.blocks[45][0] + 110, y: gameInfo.blocks[45][1] + 50},
+    ];
+    const random = Math.floor(Math.random() * positions.length);
+    const rangeX = (Math.random() - 0.5) * 20;
+    const rangeY = (Math.random() - 0.5) * 20;
+    bat.x = positions[random].x + rangeX;
+    bat.y = positions[random].y + rangeY;
+
+    if(bat.x < tower.x) bat.scale.set(1,1);
+    else(bat.scale.set(-1,1));
+
+    app.stage.addChild(bat);
+
+    gameInfo.enemies.push(bat);
+    gameInfo.enemiesLeft += 1;
+
+    return bat;
+}
+
+export async function killBat(bat: AnimatedSprite) {
+    bat.stop();
+
+    const deathAnim = new AnimatedSprite(batDeath);
+    deathAnim.x = bat.x;
+    deathAnim.y = bat.y;
+    deathAnim.anchor.set(0.5, 1);
+    deathAnim.width = bat.width;
+    deathAnim.height = bat.height;
+    deathAnim.animationSpeed = 0.3;
+    deathAnim.loop = false;
+
+    let index = app.stage.children.indexOf(bat);
+    if (index === -1) index = app.stage.children.length;
+
+    app.stage.removeChild(bat);
+    app.stage.addChildAt(deathAnim, index);
+
+    deathAnim.play();
+
+    await new Promise<void>(res => {
+        deathAnim.onComplete = res;
+    });
+
+    app.stage.removeChild(deathAnim);
+
+    const i = gameInfo.enemies.indexOf(bat);
+    if (i !== -1) gameInfo.enemies.splice(i, 1);
+
+    gameInfo.enemiesLeft -= 1;
+}
 
 function easeInOutCubic(x: number): number {
     return x < 0.5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3)/2;
+}
+
+export async function spawnGolem() {
+    const golem = new AnimatedSprite(golemWalkFrames);
+    golem.anchor.set(0.5, 1);
+    golem.width = 250
+    golem.height = 200
+    golem.animationSpeed = 0.15;
+    golem.loop = true;
+    golem.play();
+
+        const positions = [ 
+        {x: gameInfo.blocks[3][0] + 110, y: gameInfo.blocks[3][1] + 50},
+        {x: gameInfo.blocks[6][0] + 110, y: gameInfo.blocks[6][1] + 50},
+        {x: gameInfo.blocks[21][0] + 110, y: gameInfo.blocks[21][1] + 50}, 
+        {x: gameInfo.blocks[27][0] + 110, y: gameInfo.blocks[27][1] + 50},
+        {x: gameInfo.blocks[42][0] + 110, y: gameInfo.blocks[42][1] + 50},
+        {x: gameInfo.blocks[45][0] + 110, y: gameInfo.blocks[45][1] + 50},
+    ];
+    const random = Math.floor(Math.random() * positions.length);
+    const rangeX = (Math.random() - 0.5) * 20;
+    const rangeY = (Math.random() - 0.5) * 20;
+    golem.x = positions[random].x + rangeX;
+    golem.y = positions[random].y + rangeY;
+
+    if(golem.x < tower.x) golem.scale.set(1,1);
+    else(golem.scale.set(-1,1));
+
+    app.stage.addChild(golem);
+
+    gameInfo.enemies.push(golem);
+    gameInfo.enemiesLeft += 1;
+
+    return golem;
+}
+
+export async function killGolem(golem: AnimatedSprite) {
+    golem.stop();
+
+    const deathAnim = new AnimatedSprite(golemDieFrames);
+    deathAnim.x = golem.x;
+    deathAnim.y = golem.y;
+    deathAnim.anchor.set(0.5, 1);
+    deathAnim.width = golem.width;
+    deathAnim.height = golem.height;
+    deathAnim.animationSpeed = 0.3;
+    deathAnim.loop = false;
+
+    let index = app.stage.children.indexOf(golem);
+    if (index === -1) index = app.stage.children.length;
+
+    app.stage.removeChild(golem);
+    app.stage.addChildAt(deathAnim, index);
+
+    if(deathAnim.x < tower.x) deathAnim.scale.set(1,1);
+    else(deathAnim.scale.set(-1,1));
+
+    deathAnim.play();
+
+    await new Promise<void>(res => {
+        deathAnim.onComplete = res;
+    });
+
+    app.stage.removeChild(deathAnim);
+
+    const i = gameInfo.enemies.indexOf(golem);
+    if (i !== -1) gameInfo.enemies.splice(i, 1);
+
+    gameInfo.enemiesLeft -= 1;
+}
+
+export async function attackGolem(golem: AnimatedSprite) {
+    golem.stop();
+
+    golem.textures = golemAttackFrames;
+    golem.animationSpeed = 0.3;
+    golem.loop = true;
+    golem.play();
+
+    if (golem.x < tower.x) golem.scale.set(1,1);
+    else golem.scale.set(-1,1);
 }

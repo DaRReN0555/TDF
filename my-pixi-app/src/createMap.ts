@@ -1,4 +1,4 @@
-import { Assets, Sprite, Container } from 'pixi.js';
+import { Assets, Sprite, Container, Graphics } from 'pixi.js';
 import { app } from './main.js';
 import { gameInfo } from './constants.js';
 
@@ -20,18 +20,33 @@ export async function createMap() {
 
     for (let k = 0; k < totalBlocks; k++) {
     const block = new Sprite(blockTexture);
-
     block.width = 250;
     block.height = 250;
 
     block.x = pos.x;
     block.y = pos.y;
+
+    const mask = new Graphics()
+    mask.beginFill(0xffffff)
+    mask.lineTo(0, -100)
+    mask.lineTo(0, 109)
+    mask.lineTo(125, 186)
+    mask.lineTo(250, 109)
+    mask.lineTo(250, -100)
+    mask.closePath()
+    mask.endFill()
     
+    mask.x = block.x
+    mask.y = block.y
+
+    mapContainer.addChild(mask)
+    block.mask = mask
+
+    mapContainer.addChild(block);
+
     gameInfo.blocks.push([block.x, block.y]);
     gameInfo.blocksSprites.push(block)
    
-    mapContainer.addChild(block);
-
     pos.x += stepX;
     pos.y -= stepY;
 

@@ -1,7 +1,9 @@
-import { Ticker, Graphics } from "pixi.js";
+import { Ticker, Graphics, AnimatedSprite } from "pixi.js";
 import { app } from "./main.js";
 import { gameInfo} from "./constants.js";
 import { tower } from "./main.js";
+import { golemWalkFrames, attackGolem } from "./spawnEnemies.js";
+import { changeSkinAnim } from "./changeTowerSkinAnim.js";
 
 let k = 0
 
@@ -33,6 +35,7 @@ function updateEnemies(deltaTime: Ticker): void {
             k++
             if(k > 100) k = 0;
             if(k == 100) {
+                if(enemy instanceof AnimatedSprite && enemy.textures === golemWalkFrames) {attackGolem(enemy); changeSkinAnim(gameInfo)}
                 spawnParticles(tower.x, tower.y + 20)
                 gameInfo.hp -= gameInfo.enemiesDamage;
             }
@@ -41,9 +44,18 @@ function updateEnemies(deltaTime: Ticker): void {
 
         dx /= dist;
         dy /= dist;
+        if(enemy instanceof AnimatedSprite && enemy.textures === golemWalkFrames) {
+            enemy.x += dx * gameInfo.ENEMY_SPEED * delta / 2;
+            enemy.y += dy * gameInfo.ENEMY_SPEED * delta / 2;
+        }
+        else {
+            enemy.x += dx * gameInfo.ENEMY_SPEED * delta;
+            enemy.y += dy * gameInfo.ENEMY_SPEED * delta;
+        }
 
-        enemy.x += dx * gameInfo.ENEMY_SPEED * delta;
-        enemy.y += dy * gameInfo.ENEMY_SPEED * delta;
+
+
+        
 
 
     }

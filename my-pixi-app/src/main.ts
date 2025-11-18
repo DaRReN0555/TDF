@@ -1,11 +1,13 @@
-import { Application, Assets, Sprite, Graphics, Ticker, Container, TextStyle, Text, Point } from 'pixi.js';
+import { Application, Assets, Sprite, AnimatedSprite, Graphics, Ticker, Container, TextStyle, Text, Point, Texture } from 'pixi.js';
 import {createMap} from "./createMap.js";
 import {createTower, bow} from "./createTower.js";
-import {spawnEnemies} from "./spawnEnemies.js";
+import {spawnEnemies, batFly, killBat, golemWalkFrames, killGolem, golemAttackFrames} from "./spawnEnemies.js";
 import {startEnemyMovement} from "./enemiesMoving.js";
 import {gameInfo} from "./constants.js";
 import {restartScreen} from "./restartGame.js";
 import { changeSkinAnim } from './changeTowerSkinAnim';
+import { func } from './createShader.js';
+
 
 export const app = new Application();
 await app.init({
@@ -14,6 +16,8 @@ await app.init({
 });
 document.body.appendChild(app.canvas);
 app.stage.sortableChildren = true;
+
+func()
 
 await createMap();
 export let tower = await createTower()
@@ -151,23 +155,64 @@ function shootArrow(enemy: EnemyWithHp, damage: number, arrowSpeed: number) {
         }
 
         const dx = enemy.x - arrowSprite.x;
-        const dy = enemy.y - 20 - arrowSprite.y;
+        let dy = enemy.y - 20 - arrowSprite.y;
+        if (enemy instanceof AnimatedSprite && enemy.textures === batFly) {
+            dy = enemy.y - 60 - arrowSprite.y;
+        }
         const dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist < 5) {
             enemy.hp -= damage;
             if (enemy.hp <= 0) {
-                const deathX = enemy.x;
-                const deathY = enemy.y;
-                if (enemy.parent) enemy.parent.removeChild(enemy);
-                gameInfo.enemiesKilled++;
-
-                const index = gameInfo.enemies.indexOf(enemy);
-                if (index !== -1) gameInfo.enemies.splice(index, 1);
-
-                spawnParticles(deathX, deathY);
-                spawnCoins(deathX, deathY);
+                if (enemy instanceof AnimatedSprite && enemy.textures === batFly) {
+                    killBat(enemy);
+                    const deathX = enemy.x;
+                    const deathY = enemy.y;
+                
+                    if (enemy.parent) enemy.parent.removeChild(enemy);
+                    gameInfo.enemiesKilled++;
+                
+                    const index = gameInfo.enemies.indexOf(enemy);
+                    if (index !== -1) gameInfo.enemies.splice(index, 1);
+                
+                    spawnParticles(deathX, deathY - 60, "#5f3a70ff");
+                    spawnCoins(deathX, deathY - 40);
+                } 
+                else if (enemy instanceof AnimatedSprite && (enemy.textures === golemWalkFrames || enemy.textures === golemAttackFrames)) {
+                    killGolem(enemy);
+                    gameInfo.money += 100
+                    const deathX = enemy.x;
+                    const deathY = enemy.y;
+                
+                    if (enemy.parent) enemy.parent.removeChild(enemy);
+                    gameInfo.enemiesKilled++;
+                
+                    const index = gameInfo.enemies.indexOf(enemy);
+                    if (index !== -1) gameInfo.enemies.splice(index, 1);
+                
+                    spawnParticles(deathX, deathY - 60, "#5f3a70ff");
+                    spawnCoins(deathX, deathY - 40);
+                }
+                else {
+                    const deathX = enemy.x;
+                    const deathY = enemy.y;
+                
+                    if (enemy.parent) enemy.parent.removeChild(enemy);
+                    gameInfo.enemiesKilled++;
+                
+                    const index = gameInfo.enemies.indexOf(enemy);
+                    if (index !== -1) gameInfo.enemies.splice(index, 1);
+                
+                    spawnParticles(deathX, deathY, "#e4e4e4ff");
+                    spawnCoins(deathX, deathY);
+                }
+            
+                enemy.isTargeted = false;
+                app.stage.removeChild(arrowSprite);
+                app.ticker.remove(moveArrow);
+                return;
             }
+
 
             enemy.isTargeted = false;
             app.stage.removeChild(arrowSprite);
@@ -210,14 +255,14 @@ interface Particle extends Graphics {
   vy: number;
 }
 
-function spawnParticles(x: number, y: number) {
+function spawnParticles(x: number, y: number, color: string) {
     const particles: Graphics[] = [];
     const count = Math.floor(Math.random() * 5) + 3;
 
     for (let i = 0; i < count; i++) {
         const p = new Graphics() as Particle;;
         const size = 3 + Math.random() * 3;
-        p.beginFill("e8ebea");
+        p.beginFill(`${color}`);
         p.drawRect(-size / 2, -size / 2, size, size);
         p.endFill();
         p.x = x;
