@@ -37,7 +37,7 @@ export const gameInfo: GameInfo = {
     moneyPerKill: 5,
     hp: 20,
     maxHp: 20,
-    wave: 4,
+    wave: 1,
     enemiesHp: 5,
     radiusX: 350,
     radiusY: 200,

@@ -1,6 +1,5 @@
 import { Application, Graphics, Container, Text, Sprite, AnimatedSprite } from 'pixi.js';
 import { gameInfo } from './constants.js';
-import { isButtonClicked } from './main.js';
 
 function easeInOutCubic(x: number): number {
     return x < 0.5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3)/2;
@@ -117,7 +116,8 @@ export function restartScreen(app: Application, spawnEnemies: () => void, startE
     }
     app.ticker.add(update)
 
-    function restartGame() {
+    async function restartGame() {
+        await clearEnemies(app)
         gameInfo.isGameEnded = false
         gameInfo.damage = 5
         gameInfo.money = 0
@@ -125,19 +125,18 @@ export function restartScreen(app: Application, spawnEnemies: () => void, startE
         gameInfo.hp = 20
         gameInfo.maxHp = 20
         gameInfo.wave = 1
-        gameInfo.enemiesHp = 5
         gameInfo.radiusX = 350
         gameInfo.radiusY = 200
         gameInfo.enemiesLeft = 0
         gameInfo.enemiesKilled = 0
-        gameInfo.enemiesOnWave = 4
+        gameInfo.enemiesOnWave = gameInfo.wave * 2 + 2;
+        gameInfo.enemiesHp = gameInfo.wave * 2 + 5;
         gameInfo.enemiesDamage = 4
         gameInfo.enemies = []
         gameInfo.shopHp = 20
         gameInfo.shopRange = 20
         gameInfo.shopMoneyWave = 20
         gameInfo.enemies = [];
-        clearEnemies(app)
         createTower()
         spawnEnemies()
         startEnemyMovement()

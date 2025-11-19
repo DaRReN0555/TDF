@@ -1,4 +1,4 @@
-import { Application, Assets, Sprite, AnimatedSprite, Graphics, Ticker, Container, TextStyle, Text, Point, Texture } from 'pixi.js';
+import { Application, Assets, Sprite, AnimatedSprite, Graphics, Ticker, Container, TextStyle, Text, Point } from 'pixi.js';
 import {createMap} from "./createMap.js";
 import {createTower, bow} from "./createTower.js";
 import {spawnEnemies, batFly, killBat, golemWalkFrames, killGolem, golemAttackFrames} from "./spawnEnemies.js";
@@ -473,7 +473,7 @@ coinText.zIndex = tower.zIndex + 2;
 moneyContainer.addChild(coinText);
 
 function spawnCoins(x: number, y: number) {
-    const coinsCount = gameInfo.moneyPerKill;
+    const coinsCount = gameInfo.moneyPerKill > 5 ? 5 : gameInfo.moneyPerKill;
     for (let i = 0; i < coinsCount; i++) {
         const coinSprite = new Sprite(coin);
         coinSprite.anchor.set(0.5);
@@ -984,12 +984,90 @@ app.ticker.add(() => {
             gameInfo.enemiesOnWave += 2;
             gameInfo.respawnDuration = Math.max(200, gameInfo.respawnDuration - 20);
             gameInfo.money += gameInfo.shopMoneyWave;
-
+            if (gameInfo.wave % 5 === 0) bossWarningAnim();
             spawnEnemies();
             startWaveProgress();
         }
     }
 });
+
+const bossWarning = new Graphics()
+bossWarning.beginFill("#ffffffff")
+bossWarning.drawRoundedRect(tower.x - 150, + 300, 300, 100, 30)
+bossWarning.endFill()
+bossWarning.zIndex = 10000
+app.stage.addChild(bossWarning)
+
+const bossWarningBg = new Graphics()
+bossWarningBg.beginFill("#ffffffff")
+bossWarningBg.drawRoundedRect(tower.x - 160, + 290, 320, 120, 35)
+bossWarningBg.endFill()
+bossWarningBg.alpha = 0.5
+bossWarningBg.zIndex = 10000
+app.stage.addChild(bossWarningBg)
+
+const textStyleBoss = new TextStyle({
+  fontFamily: "Arial",
+  fontSize: 50,
+  fill: "#b35252ff",
+  align: "center",
+  fontWeight: "bold",
+})
+
+const bossText = new Text("BOSS", textStyleBoss)
+bossText.x = tower.x
+bossText.y = 350
+bossText.zIndex = 10000
+bossText.anchor.set(0.5)
+app.stage.addChild(bossText)
+
+bossText.y = -500
+bossWarning.y = -500
+bossWarningBg.y = -500
+
+
+
+function bossWarningAnim() {
+    const startPos = -500;
+    const targetWarning = 0;
+    const targetBg = 0;
+    const targetText = 350;
+    const duration = 500;
+    const startTime = performance.now();
+    function update() {
+        let elapsed = performance.now() - startTime;
+        let t = Math.min(elapsed / duration, 1);
+        t = easeInOutCubic(t);
+
+        bossWarning.y  = startPos + (targetWarning - startPos) * t;
+        bossWarningBg.y = startPos + (targetBg - startPos) * t;
+        bossText.y = startPos + (targetText - startPos) * t;
+
+        if (t >= 1) {
+            app.ticker.remove(update);
+            setTimeout(() => startReturnAnim(), 1000);
+        }
+    }
+    app.ticker.add(update);
+
+    function startReturnAnim() {
+        const startTime2 = performance.now();
+        function update2() {
+            let elapsed = performance.now() - startTime2;
+            let t = Math.min(elapsed / duration, 1);
+            t = easeInOutCubic(t);
+
+            bossWarning.y  = targetWarning + (startPos - targetWarning) * t;
+            bossWarningBg.y = targetBg + (startPos - targetBg) * t;
+            bossText.y = targetText + (startPos - targetText) * t;
+
+            if (t >= 1) {
+                app.ticker.remove(update2);
+            }
+        }
+        app.ticker.add(update2);
+    }
+}
 
 let lastSkin = 1;
 
