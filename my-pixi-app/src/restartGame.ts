@@ -117,7 +117,7 @@ export function restartScreen(app: Application, spawnEnemies: () => void, startE
     app.ticker.add(update)
 
     async function restartGame() {
-        await clearEnemies(app)
+        clearEnemies(app)
         gameInfo.isGameEnded = false
         gameInfo.damage = 5
         gameInfo.money = 0
