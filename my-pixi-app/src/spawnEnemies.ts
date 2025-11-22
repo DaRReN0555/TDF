@@ -273,6 +273,12 @@ async function spawnCube() {
     anim.height = 60
     anim.play();
 
+    const shadowEllipse = new Graphics();
+    shadowEllipse.beginFill("#000000");
+    shadowEllipse.drawEllipse(anim.x, anim.y, 18, 13);
+    shadowEllipse.endFill();
+    shadowEllipse.alpha = 0.3;
+
     const positions = [ 
         {x: gameInfo.blocks[3][0] + 110, y: gameInfo.blocks[3][1] + 50},
         {x: gameInfo.blocks[6][0] + 110, y: gameInfo.blocks[6][1] + 50},
@@ -291,14 +297,34 @@ async function spawnCube() {
     else(anim.scale.set(-1,1));
 
     app.stage.addChild(anim);
+    app.stage.addChild(shadowEllipse);
 
     gameInfo.enemies.push(anim);
     gameInfo.enemiesLeft += 1;
 
+    let y = anim.y;
+
+    app.ticker.add(d => {
+      if (!gameInfo.enemies.includes(anim)) {
+        app.stage.removeChild(shadowEllipse);
+        return;
+      }
+    
+      let dx = tower.x - anim.x;
+      let dy = tower.y - y + 25;
+      const dist = Math.sqrt(dx * dx + dy * dy)
+      dy /= dist;
+      y += dy * gameInfo.ENEMY_SPEED * d.deltaMS / 20;
+    
+      const sin = Math.sin(performance.now() / 200) * 10;
+      anim.y = y + sin;
+    
+      shadowEllipse.x = anim.x;
+      shadowEllipse.y = y + 10;
+      shadowEllipse.scale.set(1 + (anim.y - shadowEllipse.y) / 60)
+    });
     return anim;
 }
-
-
 
 function easeInOutCubic(x: number): number {
     return x < 0.5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3)/2;

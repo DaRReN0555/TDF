@@ -3,7 +3,6 @@ import { app } from "./main.js";
 import { gameInfo} from "./constants.js";
 import { tower } from "./main.js";
 import { golemWalkFrames, } from "./spawnEnemies.js";
-import { changeSkinAnim } from "./changeTowerSkinAnim.js";
 
 let k = 0
 
@@ -50,13 +49,8 @@ function updateEnemies(deltaTime: Ticker): void {
         else {
             enemy.x += dx * gameInfo.ENEMY_SPEED * delta;
             enemy.y += dy * gameInfo.ENEMY_SPEED * delta;
+
         }
-
-
-
-        
-
-
     }
 }
 
