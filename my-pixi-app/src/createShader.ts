@@ -38,6 +38,7 @@ export let func = (async () => {
       uTexture: texture.source,
       backgroundUniforms: {
         resolution: { value: [window.innerWidth, window.innerHeight], type: 'vec2<f32>' },
+        uTime: { value: 0, type: 'f32' },
       },
     },
   });
@@ -66,6 +67,9 @@ export let func = (async () => {
       geometry.attributes.aPosition.buffer.update();
       shader.resources.backgroundUniforms.uniforms.resolution = [window.innerWidth, window.innerHeight];
       shader.resources.backgroundUniforms.update();
+  })
+  app.ticker.add(() => {
+    shader.resources.backgroundUniforms.uniforms.uTime = performance.now() / 1000;
   })
 });
 

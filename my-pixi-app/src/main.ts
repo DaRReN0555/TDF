@@ -51,6 +51,8 @@ const towerSkin3 = await Assets.load(
   "Sprites/Towers/Archer/archer_level_3.png",
 );
 
+const settingsIconTexture = await Assets.load("Sprites/gear.png",)
+
 app.ticker.add(() => {
   if (!gameInfo.isGameEnded) {
     const towerBottom = tower.y + tower.height * (1 - tower.anchor.y);
@@ -984,87 +986,10 @@ app.ticker.add(() => {
     gameInfo.enemiesOnWave += 2;
     gameInfo.respawnDuration = Math.max(200, gameInfo.respawnDuration - 20);
     gameInfo.money += gameInfo.shopMoneyWave;
-    if (gameInfo.wave % 5 === 0) bossWarningAnim();
     spawnEnemies();
     startWaveProgress();
   }
 });
-
-const bossWarning = new Graphics();
-bossWarning.beginFill("#ffffffff");
-bossWarning.drawRoundedRect(tower.x - 150, +300, 300, 100, 30);
-bossWarning.endFill();
-bossWarning.zIndex = 10000;
-app.stage.addChild(bossWarning);
-
-const bossWarningBg = new Graphics();
-bossWarningBg.beginFill("#ffffffff");
-bossWarningBg.drawRoundedRect(tower.x - 160, +290, 320, 120, 35);
-bossWarningBg.endFill();
-bossWarningBg.alpha = 0.5;
-bossWarningBg.zIndex = 10000;
-app.stage.addChild(bossWarningBg);
-
-const textStyleBoss = new TextStyle({
-  fontFamily: "Arial",
-  fontSize: 50,
-  fill: "#b35252ff",
-  align: "center",
-  fontWeight: "bold",
-});
-
-const bossText = new Text("BOSS", textStyleBoss);
-bossText.x = tower.x;
-bossText.y = 350;
-bossText.zIndex = 10000;
-bossText.anchor.set(0.5);
-app.stage.addChild(bossText);
-
-bossText.y = -500;
-bossWarning.y = -500;
-bossWarningBg.y = -500;
-
-function bossWarningAnim() {
-  const startPos = -500;
-  const targetWarning = 0;
-  const targetBg = 0;
-  const targetText = 350;
-  const duration = 500;
-  const startTime = performance.now();
-  function update() {
-    let elapsed = performance.now() - startTime;
-    let t = Math.min(elapsed / duration, 1);
-    t = easeInOutCubic(t);
-
-    bossWarning.y = startPos + (targetWarning - startPos) * t;
-    bossWarningBg.y = startPos + (targetBg - startPos) * t;
-    bossText.y = startPos + (targetText - startPos) * t;
-
-    if (t >= 1) {
-      app.ticker.remove(update);
-      setTimeout(() => startReturnAnim(), 1000);
-    }
-  }
-  app.ticker.add(update);
-
-  function startReturnAnim() {
-    const startTime2 = performance.now();
-    function update2() {
-      let elapsed = performance.now() - startTime2;
-      let t = Math.min(elapsed / duration, 1);
-      t = easeInOutCubic(t);
-
-      bossWarning.y = targetWarning + (startPos - targetWarning) * t;
-      bossWarningBg.y = targetBg + (startPos - targetBg) * t;
-      bossText.y = targetText + (startPos - targetText) * t;
-
-      if (t >= 1) {
-        app.ticker.remove(update2);
-      }
-    }
-    app.ticker.add(update2);
-  }
-}
 
 let lastSkin = 1;
 
@@ -1099,3 +1024,202 @@ app.ticker.add(() => {
     changeSkinAnim(gameInfo);
   }
 });
+
+const settingsContainer = new Container()
+settingsContainer.x = 170;
+settingsContainer.y = 40;
+settingsContainer.zIndex = tower.zIndex + 3;
+app.stage.addChild(settingsContainer);
+
+const settingsBg = new Graphics()
+settingsBg.beginFill("#464646ff");
+settingsBg.drawRoundedRect(0, 0, 60, 60, 20);
+settingsBg.endFill();
+settingsBg.alpha = 0.5;
+settingsContainer.addChild(settingsBg);
+
+const settings = new Graphics()
+settings.beginFill("#5e5e5eff");
+settings.drawRoundedRect(5, 5, 50, 50, 15);
+settings.endFill();
+settings.alpha = 1;
+settingsContainer.addChild(settings);
+
+settings.interactive = true
+
+const settingsIcon = new Sprite(settingsIconTexture);
+settingsIcon.anchor.set(0.5);
+settingsIcon.width = 40;
+settingsIcon.height = 40;
+settingsIcon.x = 30;
+settingsIcon.y = 30;
+settingsContainer.addChild(settingsIcon);
+
+settings.on("pointerover", () => {
+  let startTime = performance.now();
+  let duration = 100
+  function update() {
+    let elapsed = performance.now() - startTime
+    let t = elapsed / duration
+    t = easeInOutCubic(t)
+    settingsIcon.width = 40 + (50 - 40) * t
+    settingsIcon.height = 40 + (50 - 40) * t
+    if (t >= 1) {
+      app.ticker.remove(update)
+    }
+  }
+  app.ticker.add(update)
+});
+
+settings.on("pointerout", () => {
+  let startTime = performance.now();
+  let duration = 100
+  function update() {
+    let elapsed = performance.now() - startTime
+    let t = elapsed / duration
+    t = easeInOutCubic(t)
+    settingsIcon.width = 50 - (50 - 40) * t
+    settingsIcon.height = 50 - (50 - 40) * t
+    if (t >= 1) {
+      app.ticker.remove(update)
+    }
+  }
+  app.ticker.add(update)
+});
+
+let isSettingsClicked = false
+
+settings.on("pointerdown", () => {
+  isSettingsClicked = !isSettingsClicked;
+  isSettingsClicked ? spawnEnemyButton.interactive = true : spawnEnemyButton.interactive = false
+
+  let startX = settingsMenuContainer.x;
+  let startY = settingsMenuContainer.y;
+
+  let endX = isSettingsClicked ? 45 : 200;
+  let endY = isSettingsClicked ? 110 : 60;
+
+  let startW = settingsMenuContainer.width;
+  let startH = settingsMenuContainer.height;
+
+  let endW = isSettingsClicked ? 184 : 0;
+  let endH = isSettingsClicked ? 115 : 0;
+
+  let startTime = performance.now();
+  let duration = 200;
+
+  function update() {
+    let elapsed = performance.now() - startTime;
+    let t = elapsed / duration;
+    if (t > 1) t = 1;
+    let e = easeInOutCubic(t);
+
+    settingsMenuContainer.x = startX + (endX - startX) * e;
+    settingsMenuContainer.y = startY + (endY - startY) * e;
+
+    settingsMenuContainer.width  = startW + (endW - startW) * e;
+    settingsMenuContainer.height = startH + (endH - startH) * e;
+
+    if (t === 1) {
+      app.ticker.remove(update);
+    }
+  }
+  app.ticker.add(update);
+});
+
+
+
+const settingsMenuContainer = new Container()
+settingsMenuContainer.x = 200;
+settingsMenuContainer.y = 60;
+settingsMenuContainer.scale.set(0);
+settingsMenuContainer.zIndex = tower.zIndex + 3;
+app.stage.addChild(settingsMenuContainer);
+
+const settingsMenu = new Graphics()
+settingsMenu.beginFill("#464646ff");
+settingsMenu.drawRoundedRect(0, 0, 184, 115, 20);
+settingsMenu.endFill();
+settingsMenu.x = 0;
+settingsMenu.y = 0;
+settingsMenu.alpha = 0.5;
+settingsMenu.zIndex = tower.zIndex + 3;
+settingsMenuContainer.addChild(settingsMenu);
+
+const settingsMenuBg = new Graphics()
+settingsMenuBg.beginFill("#585858ff");
+settingsMenuBg.drawRoundedRect(5, 5, 174, 105, 15);
+settingsMenuBg.endFill();
+settingsMenuBg.x = 0;
+settingsMenuBg.y = 0;
+settingsMenuBg.zIndex = tower.zIndex + 3;
+settingsMenuContainer.addChild(settingsMenuBg);
+
+const spawnEnemyButtonBg = new Graphics()
+spawnEnemyButtonBg.beginFill("#a5a346ff");
+spawnEnemyButtonBg.drawRoundedRect(17, 25, 150, 70, 20);
+spawnEnemyButtonBg.endFill();
+spawnEnemyButtonBg.x = 0;
+spawnEnemyButtonBg.y = 0;
+spawnEnemyButtonBg.zIndex = tower.zIndex + 3;
+settingsMenuContainer.addChild(spawnEnemyButtonBg);
+
+const spawnEnemyButton = new Graphics()
+spawnEnemyButton.beginFill("#bebc52ff");
+spawnEnemyButton.drawRoundedRect(17, 16, 150, 70, 20);
+spawnEnemyButton.endFill();
+spawnEnemyButton.x = 0;
+spawnEnemyButton.y = 0;
+spawnEnemyButton.zIndex = tower.zIndex + 3;
+settingsMenuContainer.addChild(spawnEnemyButton);
+
+spawnEnemyButton.interactive = true
+
+spawnEnemyButton.on("pointerdown", () => {
+  totalEnemies++
+  gameInfo.enemiesOnWave++
+  spawnEnemies()
+  let startTime = performance.now();
+  let duration = 100
+  function update() {
+    let elapsed = performance.now() - startTime
+    let t = elapsed / duration
+    t = easeInOutCubic(t)
+    spawnEnemyButton.y = 0 + 10 * t
+    spawnText.y = 40 + (40 - 30) * t
+    if (t >= 1) {
+      app.ticker.remove(update)
+    }
+  }
+  app.ticker.add(update)
+});
+
+spawnEnemyButton.on("pointerup", () => {
+  let startTime = performance.now();
+  let duration = 100
+  function update() {
+    let elapsed = performance.now() - startTime
+    let t = elapsed / duration
+    t = easeInOutCubic(t)
+    spawnEnemyButton.y = 10 - (10 - 0) * t
+    spawnText.y = 50 - (50 - 40) * t
+    if (t >= 1) {
+      app.ticker.remove(update)
+    }
+  }
+  app.ticker.add(update)
+});
+
+const spawnTextStyle = new TextStyle({
+  fontFamily: "Arial",
+  fontSize: 20,
+  fontWeight: "bold",
+  fill: "#000000ff",
+  align: "center",
+});
+
+const spawnText = new Text("SPAWN", spawnTextStyle);
+spawnText.x = 55
+spawnText.y = 40
+spawnText.zIndex = tower.zIndex + 3;
+settingsMenuContainer.addChild(spawnText);

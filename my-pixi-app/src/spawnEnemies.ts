@@ -72,11 +72,11 @@ export async function spawnEnemies() {
         gameInfo.moneyPerKill += 10
     }
 
-    if (gameInfo.wave % 5 !== 0) {
+
       gameInfo.enemiesOnWave = gameInfo.wave * 2 + 2;
       gameInfo.enemiesHp = gameInfo.wave * 2 + 5;
         for (let k = 0; k < gameInfo.enemiesOnWave; k++) {
-            const cubeChance = 0.95;
+            const cubeChance = 0.25;
             if (Math.random() < cubeChance) {
                 await spawnCube();
                 await new Promise(res => setTimeout(res, gameInfo.SPAWN_INTERVAL));
@@ -125,11 +125,7 @@ export async function spawnEnemies() {
 
             await new Promise(res => setTimeout(res, gameInfo.SPAWN_INTERVAL));
         }
-    } else {
-        gameInfo.enemiesOnWave = 1
-        gameInfo.enemiesHp += 100
-        await spawnGolem();
-    }
+    
 }
 
 function pickSpawnPos(entity: Sprite) {
@@ -328,39 +324,5 @@ async function spawnCube() {
 
 function easeInOutCubic(x: number): number {
     return x < 0.5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3)/2;
-}
-
-export async function spawnGolem() {
-    const golem = new AnimatedSprite(golemWalkFrames);
-    golem.anchor.set(0.5, 1);
-    golem.width = 250
-    golem.height = 200
-    golem.animationSpeed = 0.15;
-    golem.loop = true;
-    golem.play();
-
-        const positions = [ 
-        {x: gameInfo.blocks[3][0] + 110, y: gameInfo.blocks[3][1] + 50},
-        {x: gameInfo.blocks[6][0] + 110, y: gameInfo.blocks[6][1] + 50},
-        {x: gameInfo.blocks[21][0] + 110, y: gameInfo.blocks[21][1] + 50}, 
-        {x: gameInfo.blocks[27][0] + 110, y: gameInfo.blocks[27][1] + 50},
-        {x: gameInfo.blocks[42][0] + 110, y: gameInfo.blocks[42][1] + 50},
-        {x: gameInfo.blocks[45][0] + 110, y: gameInfo.blocks[45][1] + 50},
-    ];
-    const random = Math.floor(Math.random() * positions.length);
-    const rangeX = (Math.random() - 0.5) * 20;
-    const rangeY = (Math.random() - 0.5) * 20;
-    golem.x = positions[random].x + rangeX;
-    golem.y = positions[random].y + rangeY;
-
-    if(golem.x < tower.x) golem.scale.set(1,1);
-    else(golem.scale.set(-1,1));
-
-    app.stage.addChild(golem);
-
-    gameInfo.enemies.push(golem);
-    gameInfo.enemiesLeft += 1;
-
-    return golem;
 }
 
