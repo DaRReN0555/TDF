@@ -60,4 +60,5 @@ export async function createMap() {
       pos = { ...firstPos };
     }
   }
+  return mapContainer
 }
