@@ -15,7 +15,6 @@ import { createTower, bow } from "./createTower.js";
 import {
   spawnEnemies,
   cube,
-  golemWalkFrames,
 } from "./spawnEnemies.js";
 import { startEnemyMovement } from "./enemiesMoving.js";
 import { gameInfo } from "./constants.js";
@@ -35,7 +34,6 @@ func();
 
 await createMap();
 export let tower = await createTower();
-spawnEnemies();
 startEnemyMovement();
 
 app.stage.sortableChildren = true;
@@ -346,7 +344,10 @@ let animStart = 0;
 let animDuration = 400;
 let animating = false;
 
-function startWaveProgress() {
+spawnEnemies();
+
+export function startWaveProgress() {
+  gameInfo.enemiesLeft = 1
   startTime = performance.now();
   totalEnemies = gameInfo.enemiesOnWave;
   displayedProgress = 0;
@@ -354,6 +355,12 @@ function startWaveProgress() {
   targetProgress = 0;
   animating = false;
   mask.scale.x = 0;
+}
+
+export function updateWaveProgress() {
+  totalEnemies = gameInfo.enemiesLeft;
+  animating = true
+  mask.scale.x = displayedProgress
 }
 
 startWaveProgress();
@@ -956,7 +963,8 @@ app.ticker.add(() => {
   text2.text = gameInfo.wave.toString();
 
   const killed = gameInfo.enemiesKilled;
-  const total = totalEnemies || 1;
+  const alive = gameInfo.enemies.length;
+  const total = killed + alive || 1;
   const newTarget = Math.min(killed / total, 1);
 
   if (newTarget !== targetProgress) {
@@ -1176,8 +1184,6 @@ settingsMenuContainer.addChild(spawnEnemyButton);
 spawnEnemyButton.interactive = true
 
 spawnEnemyButton.on("pointerdown", () => {
-  totalEnemies++
-  gameInfo.enemiesOnWave++
   spawnEnemies()
   let startTime = performance.now();
   let duration = 100

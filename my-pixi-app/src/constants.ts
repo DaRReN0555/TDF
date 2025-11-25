@@ -1,4 +1,4 @@
-import { Sprite } from 'pixi.js';
+import { Sprite, Graphics } from 'pixi.js';
 
 export interface GameInfo {
 
@@ -26,7 +26,9 @@ export interface GameInfo {
     isGameEnded: boolean,
     SPAWN_INTERVAL: number,
     ENEMY_SPEED: number,
-    TOWER_FIRE_RATE: number
+    TOWER_FIRE_RATE: number,
+    shadows: Array<Graphics>,
+    anims: Array<Sprite>
 }
 
 export const gameInfo: GameInfo = {
@@ -54,7 +56,9 @@ export const gameInfo: GameInfo = {
     isGameEnded: false,
     SPAWN_INTERVAL: 500,
     ENEMY_SPEED: 1.5,
-    TOWER_FIRE_RATE: 250
+    TOWER_FIRE_RATE: 250,
+    shadows: [],
+    anims: []
 }
 
 export const enemySize = {

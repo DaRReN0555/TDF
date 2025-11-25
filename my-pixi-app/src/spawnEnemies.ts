@@ -1,6 +1,7 @@
-import { Assets, Sprite, AnimatedSprite, Texture, Graphics } from 'pixi.js';
+import { Assets, Sprite, AnimatedSprite, Texture, Graphics, Ticker } from 'pixi.js';
 import { gameInfo, enemySize } from './constants';
-import { app, tower } from './main.js';
+import { app, tower,} from './main.js';
+import { updateWaveProgress } from './main.js';
 
 const crushingFrame = await Assets.load(`Sprites/Animations/Ellipse 5.png`)
 
@@ -73,9 +74,9 @@ export async function spawnEnemies() {
     }
 
 
-      gameInfo.enemiesOnWave = gameInfo.wave * 2 + 2;
-      gameInfo.enemiesHp = gameInfo.wave * 2 + 5;
         for (let k = 0; k < gameInfo.enemiesOnWave; k++) {
+            updateWaveProgress()
+            if(gameInfo.isGameEnded) return
             const cubeChance = 0.25;
             if (Math.random() < cubeChance) {
                 await spawnCube();
@@ -122,6 +123,7 @@ export async function spawnEnemies() {
 
             gameInfo.enemies.push(walkAnim);
             gameInfo.enemiesLeft += 1;
+            gameInfo.anims.push(crushAnim);
 
             await new Promise(res => setTimeout(res, gameInfo.SPAWN_INTERVAL));
         }
@@ -154,6 +156,7 @@ async function crushingAnimation(x: number, y: number): Promise<Sprite> {
         sprite.anchor.set(0.5);
         sprite.scale.set(1);
         app.stage.addChild(sprite);
+        gameInfo.anims.push(sprite);
 
         const duration = gameInfo.respawnDuration / gameInfo.spawnSpeed;
         const startTime = performance.now();
@@ -161,6 +164,7 @@ async function crushingAnimation(x: number, y: number): Promise<Sprite> {
         const endScale = 1;
 
         const tickerCallback = () => {
+            if(gameInfo.isGameEnded) app.ticker.remove(tickerCallback)
             const elapsed = performance.now() - startTime;
             let t = Math.min(elapsed / duration, 1);
             t = easeInOutCubic(t);
@@ -192,6 +196,8 @@ async function sizeAnimation(entity: Sprite): Promise<void> {
     mask.x = entity.x;
     mask.y = entity.y;
     app.stage.addChild(mask);
+    gameInfo.shadows.push(mask);
+    gameInfo.anims.push(entity);
 
     entity.anchor.set(0.5, 1);
     entity.zIndex = 1
@@ -207,6 +213,7 @@ async function sizeAnimation(entity: Sprite): Promise<void> {
     const startTime = performance.now();
 
     const tick = () => {
+      if(gameInfo.isGameEnded) app.ticker.remove(tick)
       const elapsed = performance.now() - startTime;
       let t = Math.min(elapsed / duration, 1);
       t = easeInOutCubic(t);
@@ -236,6 +243,7 @@ async function crushingReverseAnimation(entity: Sprite): Promise<void> {
         let index = app.stage.children.indexOf(entity);
         if (index === -1) index = app.stage.children.length;
         app.stage.addChildAt(anim, index);
+        gameInfo.anims.push(anim);
 
         const duration = gameInfo.respawnDuration / gameInfo.spawnSpeed;
         const startTime = performance.now();
@@ -243,6 +251,7 @@ async function crushingReverseAnimation(entity: Sprite): Promise<void> {
         const endScale = 0.01;
 
         const tickerCallback = () => {
+            if(gameInfo.isGameEnded) app.ticker.remove(tickerCallback)
             const elapsed = performance.now() - startTime;
             let t = Math.min(elapsed / duration, 1);
             t = easeInOutCubic(t);
@@ -296,11 +305,12 @@ async function spawnCube() {
     app.stage.addChild(shadowEllipse);
 
     gameInfo.enemies.push(anim);
+    gameInfo.shadows.push(shadowEllipse);
     gameInfo.enemiesLeft += 1;
 
     let y = anim.y;
-
-    app.ticker.add(d => {
+    let ticker = (d: Ticker) => {
+      if(gameInfo.isGameEnded) app.ticker.remove(ticker)
       if (!gameInfo.enemies.includes(anim)) {
         app.stage.removeChild(shadowEllipse);
         return;
@@ -318,7 +328,9 @@ async function spawnCube() {
       shadowEllipse.x = anim.x;
       shadowEllipse.y = y + 10;
       shadowEllipse.scale.set(1 + (anim.y - shadowEllipse.y) / 60)
-    });
+    }
+
+    app.ticker.add(ticker);
     return anim;
 }
 

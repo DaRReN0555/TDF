@@ -1,5 +1,6 @@
 import { Application, Graphics, Container, Text, Sprite, AnimatedSprite } from 'pixi.js';
 import { gameInfo } from './constants.js';
+import { startWaveProgress } from './main.js';
 
 function easeInOutCubic(x: number): number {
     return x < 0.5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3)/2;
@@ -137,9 +138,11 @@ export function restartScreen(app: Application, spawnEnemies: () => void, startE
         gameInfo.shopRange = 20
         gameInfo.shopMoneyWave = 20
         gameInfo.enemies = [];
-        createTower()
+        gameInfo.anims = [];
+        gameInfo.shadows = [];
         spawnEnemies()
         startEnemyMovement()
+        startWaveProgress()
 
         let startTime = performance.now()
         let startPos1 = window.innerHeight / 2
@@ -151,6 +154,7 @@ export function restartScreen(app: Application, spawnEnemies: () => void, startE
         let duration = 1000
 
         function update() {
+            if(gameInfo.isGameEnded) clearEnemies(app)
             let elapsed = performance.now() - startTime
             let t = elapsed / duration
             t = easeInOutCubic(t)
@@ -168,7 +172,16 @@ export function restartScreen(app: Application, spawnEnemies: () => void, startE
 }
 
 function clearEnemies(app: Application) {
-    for (const entity of app.stage.children) {
-        if (entity instanceof Sprite || entity instanceof AnimatedSprite) app.stage.removeChild(entity);
+    for (const entity of gameInfo.enemies) {
+        app.stage.removeChild(entity);
     }
+    gameInfo.enemies = [];
+    for (const shadow of gameInfo.shadows) {
+        app.stage.removeChild(shadow);
+    }
+    gameInfo.shadows = [];
+    for (const anim of gameInfo.anims) {
+        app.stage.removeChild(anim);
+    }
+    gameInfo.anims = [];
 }

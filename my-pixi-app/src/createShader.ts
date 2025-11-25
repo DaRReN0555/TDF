@@ -5,6 +5,9 @@ import { app } from './main.ts';
 
 export let func = (async () => {
   const texture = await Assets.load(
+    'Sprites/water1.png',
+  );
+  const texture2 = await Assets.load(
     'Sprites/water.jpg',
   );
 
@@ -36,6 +39,7 @@ export let func = (async () => {
     },
     resources: {
       uTexture: texture.source,
+      uTexture2: texture2.source,
       backgroundUniforms: {
         resolution: { value: [window.innerWidth, window.innerHeight], type: 'vec2<f32>' },
         uTime: { value: 0, type: 'f32' },
