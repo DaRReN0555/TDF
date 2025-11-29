@@ -37,6 +37,11 @@ float noise (vec2 st) {
             (d - b) * u.x * u.y;
 }
 
+float roundedBoxSDF(vec2 uv, vec2 size, float radius) {
+    vec2 d = abs(uv) - size + radius;
+    return min(max(d.x, d.y), 0.0) + length(max(d, 0.0)) - radius;
+}
+
 void main() {
 
     vec2 uv  = vUV - 0.5;
@@ -86,15 +91,24 @@ void main() {
     vec4 img1 = texture(uTexture,  uv);
     vec4 img2 = texture(uTexture2, uv2);
 
-    float num1 = step(noise(vec2(st.x * 10.0, uTime * 1.3)) * 0.01, st.y - 0.215);
-    float num2 = step(st.y - 0.79, noise(vec2(st.x * 10.0, uTime * 1.7)) * 0.01);
-    float num3 = step(noise(vec2(st.y * 10.0, uTime * 1.36)) * 0.01 + 0.1, st.x - 0.12);
-    float num4 = step(st.x - 0.8, noise(vec2(st.y * 10.0, uTime * 1.1)) * 0.01); 
+vec2 center = vec2(0.515, 0.51);
+vec2 size = vec2(0.315, 0.315);
+float radius = 0.05;
 
-    float mask = num1 * num2 * num3 * num4;
-    vec4 wave = mix(mix(img1, img2, 0.5), img1, mask);
-    
-    float mix = num1 * num2 * num3 * num4;
+vec2 uvCentered = st - center;
+float dist = roundedBoxSDF(uvCentered, size, radius);
 
-    gl_FragColor = wave + mix * 0.6;
+float foamNoise = noise(vec2(st * 10.0 + uTime * 1.0)) * 0.02;
+float foam = smoothstep(-0.00999, -0.01, dist + foamNoise);
+vec4 foamColor = vec4(foam);
+
+img2 *= vec4(1.0, 1.0, 1.0, 0.45);
+foamColor *= vec4(0.47058823529, 0.79607843137, 0.96078431372, 1.0);
+
+vec4 wave = mix(mix(img1, img2, img2.a), foamColor, foamColor.a);
+
+vec4 final = vec4(wave.rgb, 1.0);
+
+gl_FragColor = final;
+
 }

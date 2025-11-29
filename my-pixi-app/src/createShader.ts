@@ -6,7 +6,7 @@ import { app } from './main.ts';
 export let func = (async () => {
 
   const texture  = await Assets.load('Sprites/water1.png');
-  const texture2 = await Assets.load('Sprites/water.jpg');
+  const texture2 = await Assets.load('Sprites/water2.png');
 
   const geometry = new Geometry({
     attributes: {
